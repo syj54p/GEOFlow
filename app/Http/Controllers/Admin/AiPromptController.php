@@ -62,7 +62,7 @@ class AiPromptController extends Controller
         $prompt = Prompt::query()
             ->select(['id', 'name', 'type', 'content', 'system_key', 'system_version'])
             ->whereKey($promptId)
-            ->whereIn('type', ['content', 'quality_check'])
+            ->whereIn('type', ['content', 'quality_check', 'strategy'])
             ->firstOrFail();
 
         return view('admin.ai-prompts.edit', [
@@ -80,7 +80,7 @@ class AiPromptController extends Controller
     {
         $payload = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'type' => ['nullable', 'string', 'in:content,quality_check'],
+            'type' => ['nullable', 'string', 'in:content,quality_check,strategy'],
             'content' => ['required', 'string'],
         ], [
             'name.required' => __('admin.ai_prompts.error.required'),
@@ -112,7 +112,7 @@ class AiPromptController extends Controller
     {
         $prompt = Prompt::query()
             ->whereKey($promptId)
-            ->whereIn('type', ['content', 'quality_check'])
+            ->whereIn('type', ['content', 'quality_check', 'strategy'])
             ->firstOrFail();
 
         if (filled($prompt->system_key)) {
@@ -148,7 +148,7 @@ class AiPromptController extends Controller
     {
         $prompt = Prompt::query()
             ->whereKey($promptId)
-            ->whereIn('type', ['content', 'quality_check'])
+            ->whereIn('type', ['content', 'quality_check', 'strategy'])
             ->firstOrFail();
         $copy = Prompt::query()->create([
             'name' => mb_substr((string) $prompt->name.'（副本）', 0, 100, 'UTF-8'),
@@ -171,7 +171,7 @@ class AiPromptController extends Controller
     {
         $prompt = Prompt::query()
             ->whereKey($promptId)
-            ->whereIn('type', ['content', 'quality_check'])
+            ->whereIn('type', ['content', 'quality_check', 'strategy'])
             ->firstOrFail();
 
         if (filled($prompt->system_key)) {
@@ -203,7 +203,7 @@ class AiPromptController extends Controller
     {
         return Prompt::query()
             ->select(['id', 'name', 'type', 'content', 'system_key', 'system_version', 'created_at'])
-            ->whereIn('type', ['content', 'quality_check'])
+            ->whereIn('type', ['content', 'quality_check', 'strategy'])
             ->withCount([
                 'tasks' => fn ($query) => $query->withTrashed(),
                 'qualityTasks' => fn ($query) => $query->withTrashed(),

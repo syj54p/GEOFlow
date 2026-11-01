@@ -61,8 +61,9 @@
                                             'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
                                             'bg-green-100 text-green-800' => $prompt['type'] === 'content',
                                             'bg-blue-100 text-blue-800' => $prompt['type'] === 'quality_check',
+                                            'bg-purple-100 text-purple-800' => $prompt['type'] === 'strategy',
                                         ])>
-                                            {{ $prompt['type'] === 'quality_check' ? 'AI 质检方案' : __('admin.ai_prompts.type_content') }}
+                                            {{ $prompt['type'] === 'quality_check' ? 'AI 质检方案' : ($prompt['type'] === 'strategy' ? '策略工具' : __('admin.ai_prompts.type_content')) }}
                                         </span>
                                         @if ($prompt['system_managed'])
                                             <span class="ml-1 inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-700">系统内置 · v{{ $prompt['system_version'] }}</span>
