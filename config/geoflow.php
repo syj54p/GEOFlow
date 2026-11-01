@@ -331,6 +331,31 @@ return [
         'term_cleanup_cache_ttl' => max(60, (int) env('GEOFLOW_AI_VISIBILITY_TERM_CLEANUP_CACHE_TTL', 43200)),
     ],
 
+    // GEOInflow 闭环优化阈值配置
+    'geo_inflow' => [
+        // AI 可见度评估：分数低于此阈值触发优化（0-100 分制）
+        'visibility_threshold' => max(0, min(100, (int) env('GEOFLOW_INFLOW_VISIBILITY_THRESHOLD', 20))),
+        'visibility_severity' => max(1, min(5, (int) env('GEOFLOW_INFLOW_VISIBILITY_SEVERITY', 3))),
+
+        // 分发成功率评估：失败率超过此阈值触发优化（0.0-1.0）
+        'distribution_failure_rate_threshold' => max(0, min(100, (int) env('GEOFLOW_INFLOW_DISTRIBUTION_FAILURE_THRESHOLD', 50))) / 100,
+        'distribution_severity' => max(1, min(5, (int) env('GEOFLOW_INFLOW_DISTRIBUTION_SEVERITY', 2))),
+
+        // 流量评估：发布后 N 天内 PV 低于阈值触发优化
+        'traffic_evaluation_days' => max(1, min(30, (int) env('GEOFLOW_INFLOW_TRAFFIC_DAYS', 7))),
+        'traffic_pv_threshold' => max(0, (int) env('GEOFLOW_INFLOW_TRAFFIC_PV_THRESHOLD', 100)),
+        'traffic_severity' => max(1, min(5, (int) env('GEOFLOW_INFLOW_TRAFFIC_SEVERITY', 1))),
+
+        // 质量分趋势评估：质量分下降超过此阈值触发关注
+        'quality_drop_threshold' => max(0, min(50, (int) env('GEOFLOW_INFLOW_QUALITY_DROP_THRESHOLD', 10))),
+        'quality_severity' => max(1, min(5, (int) env('GEOFLOW_INFLOW_QUALITY_SEVERITY', 2))),
+
+        // 动作推荐：根据累计严重程度分数推荐动作级别
+        'action_severity_heavy' => max(1, min(10, (int) env('GEOFLOW_INFLOW_ACTION_HEAVY', 5))),
+        'action_severity_medium' => max(1, min(10, (int) env('GEOFLOW_INFLOW_ACTION_MEDIUM', 3))),
+        'action_severity_light' => max(1, min(10, (int) env('GEOFLOW_INFLOW_ACTION_LIGHT', 1))),
+    ],
+
     // 本地上传根目录（绝对路径）
     'upload_path' => env('GEOFLOW_UPLOAD_PATH', public_path('assets/images')),
     // 上传资源对外访问 URL 前缀

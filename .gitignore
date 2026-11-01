@@ -7,6 +7,7 @@ __pycache__/
 /logs
 /uploads
 .env
+.env.local
 .env.prod
 .env.backup
 .env.production
@@ -30,3 +31,9 @@ __pycache__/
 Homestead.json
 Homestead.yaml
 Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+/.qoder
+/.cursor

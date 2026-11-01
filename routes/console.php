@@ -211,3 +211,9 @@ Schedule::command('hosted-sites:reconcile', [
 Schedule::command('geoflow:check-topic-temporal-state')->everyFiveMinutes()->onOneServer()->withoutOverlapping(5);
 
 Schedule::command('geoflow:reconcile-platform-web')->everyMinute()->onOneServer()->withoutOverlapping(2);
+
+// GEOInflow 闭环批量评估：每 6 小时扫描已发布文章，自动生成待优化动作
+Schedule::command('geoflow:geo-inflow-batch-evaluate')
+    ->twiceDaily(2, 14)          // 每天 02:00 / 14:00 各跑一次
+    ->onOneServer()
+    ->withoutOverlapping(120);   // 2 小时内不允许重叠

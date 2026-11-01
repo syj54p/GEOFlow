@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEO 诊断 — GEOFlow Admin UI V3 原型</title>
+<style>
+/* ============================================================
+   GEOFlow Admin UI V3 — Design Tokens (from app.css :root)
+   ============================================================ */
+:root {
+  --gf-blue-50:#eff6ff;  --gf-blue-100:#dbeafe;  --gf-blue-200:#bfdbfe;
+  --gf-blue-500:#3b82f6; --gf-blue-600:#2563eb;  --gf-blue-700:#1d4ed8;
+
+  --gf-gray-50:#f9fafb;  --gf-gray-100:#f3f4f6; --gf-gray-200:#e5e7eb;
+  --gf-gray-300:#d1d5db; --gf-gray-400:#9ca3af; --gf-gray-500:#6b7280;
+  --gf-gray-600:#4b5563; --gf-gray-700:#374151; --gf-gray-800:#1f2937;
+  --gf-gray-900:#111827;
+
+  --gf-emerald-50:#ecfdf5; --gf-emerald-500:#10b981; --gf-emerald-600:#059669;
+  --gf-emerald-700:#047857; --gf-emerald-100:#d1fae5; --gf-emerald-200:#a7f3d0;
+  --gf-emerald-800:#065f46;
+
+  --gf-amber-50:#fffbeb; --gf-amber-100:#fef3c7; --gf-amber-600:#d97706;
+  --gf-amber-700:#b45309; --gf-amber-800:#92400e;
+
+  --gf-red-50:#fef2f2; --gf-red-100:#fee2e2; --gf-red-500:#ef4444;
+  --gf-red-600:#dc2626; --gf-red-700:#b91c1c; --gf-red-800:#991b1b;
+
+  --gf-sky-50:#f0f9ff; --gf-sky-100:#e0f2fe; --gf-sky-600:#0284c7;
+  --gf-sky-700:#0369a1; --gf-sky-800:#075985;
+
+  --gf-yellow-100:#fef9c3; --gf-yellow-800:#854d0e;
+
+  --gf-violet-50:#f5f3ff; --gf-violet-100:#ede9fe; --gf-violet-500:#8b5cf6;
+  --gf-violet-600:#7c3aed; --gf-violet-700:#6d28d9;
+
+  --gf-sidebar-default-width:256px;
+  --gf-topbar-height:64px;
+  --gf-content-max:1280px;
+
+  --gf-radius-nav:6px;
+  --gf-radius-control:8px;
+  --gf-radius-focus:16px;
+
+  --gf-shadow-surface:0 1px 3px rgba(15,23,42,.1);
+  --gf-shadow-menu:0 10px 24px rgba(15,23,42,.12);
+
+  --gf-font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI','PingFang SC','Noto Sans SC',sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+svg{stroke-width:1.8;}
+
+body{
+  font-family:var(--gf-font);
+  font-size:14px;
+  line-height:1.6;
+  color:var(--gf-gray-800);
+  background:var(--gf-gray-50);
+}
+
+/* ============================================================
+   Shell: fixed sidebar + fixed topbar + scrolling main
+   ============================================================ */
+.gf-shell{min-height:100vh;display:flex;}
+
+/* ---- Sidebar ---- */
+.gf-sidebar{
+  position:fixed;left:0;top:0;bottom:0;
+  width:var(--gf-sidebar-default-width);
+  background:#fff;
+  border-right:1px solid var(--gf-gray-200);
+  z-index:60;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.gf-sidebar__brand{
+  height:var(--gf-topbar-height);
+  padding:0 16px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--gf-gray-100);
+  flex-shrink:0;
+}
+.gf-wordmark{
+  font-size:20px;font-weight:650;letter-spacing:-.02em;
+  color:var(--gf-gray-900);
+}
+.gf-wordmark-dot{color:var(--gf-blue-600);}
+
+.gf-sidebar__nav{
+  flex:1;overflow-y:auto;padding:8px 12px 12px;
+}
+.gf-sidebar__group{margin-top:14px;}
+.gf-sidebar__group:first-child{margin-top:4px;}
+.gf-sidebar__heading{
+  font-size:11px;font-weight:650;color:var(--gf-gray-400);
+  letter-spacing:.06em;text-transform:uppercase;
+  padding:0 12px 4px;
+}
+.gf-sidebar__items{display:flex;flex-direction:column;gap:1px;}
+.gf-sidebar__link{
+  display:flex;align-items:center;gap:10px;
+  min-height:36px;padding:6px 12px;
+  border-radius:var(--gf-radius-nav);
+  font-size:14px;font-weight:520;
+  color:var(--gf-gray-600);
+  cursor:pointer;text-decoration:none;
+  transition:background .12s,color .12s,transform .12s;
+}
+.gf-sidebar__link:hover{background:var(--gf-gray-100);color:var(--gf-gray-900);}
+.gf-sidebar__link[aria-current="page"]{
+  background:var(--gf-blue-100);color:var(--gf-blue-600);font-weight:600;
+}
+.gf-sidebar__link:active{transform:scale(.97);}
+.gf-sidebar__link svg{width:18px;height:18px;flex-shrink:0;color:inherit;}
+
+.gf-sidebar__account-bar{
+  padding:10px 12px 14px;
+  border-top:1px solid var(--gf-gray-100);
+  display:flex;align-items:center;gap:8px;
+}
+.gf-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--gf-blue-100);color:var(--gf-blue-600);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;flex-shrink:0;
+}
+.gf-account-name{font-size:13px;font-weight:600;color:var(--gf-gray-800);flex:1;}
+
+/* ---- Shell body ---- */
+.gf-shell__body{
+  margin-left:var(--gf-sidebar-default-width);
+  min-height:100vh;display:flex;flex-direction:column;
+}
+
+/* ---- Topbar ---- */
+.gf-topbar{
+  height:var(--gf-topbar-height);flex-shrink:0;
+  background:#fff;border-bottom:1px solid var(--gf-gray-200);
+  padding:0 48px;
+  display:flex;align-items:center;
+  position:sticky;top:0;z-index:30;
+}
+.gf-topbar__identity{display:flex;align-items:center;gap:8px;}
+.gf-topbar__identity svg{width:18px;height:18px;color:var(--gf-blue-600);}
+.gf-topbar__title{font-size:15px;font-weight:650;color:var(--gf-gray-900);}
+.gf-topbar__actions{margin-left:auto;display:flex;align-items:center;gap:10px;}
+
+.gf-icon-btn{
+  width:36px;height:36px;border-radius:var(--gf-radius-control);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gf-gray-400);cursor:pointer;border:none;background:none;
+  transition:background .12s,color .12s;position:relative;
+}
+.gf-icon-btn:hover{background:var(--gf-gray-100);color:var(--gf-gray-700);}
+.gf-icon-btn svg{width:18px;height:18px;}
+.gf-icon-btn .dot{
+  position:absolute;top:6px;right:6px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--gf-red-500);border:2px solid #fff;
+}
+
+.gf-lang-btn{
+  height:32px;padding:0 10px;border-radius:var(--gf-radius-nav);
+  border:1px solid var(--gf-gray-200);background:#fff;
+  font-size:12px;font-weight:600;color:var(--gf-gray-600);
+  cursor:pointer;
+}
+
+.gf-user-btn{
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  padding:4px 8px 4px 4px;border-radius:20px;
+  border:none;background:none;
+}
+.gf-user-btn:hover{background:var(--gf-gray-100);}
+.gf-user-btn .gf-avatar{width:32px;height:32px;font-size:12px;}
+.gf-user-btn svg{width:14px;height:14px;color:var(--gf-gray-400);}
+
+/* ---- Main content ---- */
+.gf-main{flex:1;overflow-y:auto;background:var(--gf-gray-50);}
+.gf-content{
+  max-width:var(--gf-content-max);
+  margin:0 auto;
+  padding:28px 48px 48px;
+}
+
+/* ============================================================
+   Page header
+   ============================================================ */
+.gf-page-header{margin-bottom:24px;}
+.gf-eyebrow{
+  font-size:12px;font-weight:700;color:var(--gf-blue-600);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;
+}
+.gf-page-header h1{font-size:28px;font-weight:700;line-height:1.25;color:var(--gf-gray-900);}
+.gf-page-header p{color:var(--gf-gray-500);font-size:15px;line-height:1.75;margin-top:6px;max-width:720px;}
+
+/* ============================================================
+   Section navigation (tabs)
+   ============================================================ */
+.gf-section-nav{
+  display:flex;align-items:flex-end;gap:6px;
+  border-bottom:1px solid var(--gf-gray-200);
+  margin-bottom:24px;
+}
+.gf-section-nav__link{
+  padding:8px 16px;font-size:14px;font-weight:600;
+  color:var(--gf-gray-500);cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:color .12s,border-color .12s;
+  text-decoration:none;
+  display:flex;align-items:center;gap:6px;
+}
+.gf-section-nav__link:hover{color:var(--gf-gray-800);border-bottom-color:var(--gf-gray-300);}
+.gf-section-nav__link[aria-current="page"]{
+  color:var(--gf-blue-600);border-bottom-color:var(--gf-blue-600);
+}
+.gf-section-nav__link .nav-dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+.gf-card{
+  background:#fff;
+  border:1px solid var(--gf-gray-200);
+  border-radius:var(--gf-radius-control);
+  box-shadow:var(--gf-shadow-surface);
+  margin-bottom:20px;
+}
+.gf-card__header{
+  padding:18px 24px;
+  border-bottom:1px solid var(--gf-gray-100);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.gf-card__title{font-size:16px;font-weight:650;color:var(--gf-gray-900);}
+.gf-card__body{padding:20px 24px;}
+.gf-card__body--flush{padding:0;}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.gf-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  min-height:40px;padding:0 16px;
+  border-radius:var(--gf-radius-control);
+  font-size:14px;font-weight:600;
+  cursor:pointer;border:1px solid var(--gf-gray-300);
+  background:#fff;color:var(--gf-gray-700);
+  transition:background .12s,border-color .12s,transform .12s;
+  text-decoration:none;
+}
+.gf-btn:hover{background:var(--gf-gray-50);border-color:var(--gf-gray-400);}
+.gf-btn:active{transform:scale(.97);}
+.gf-btn svg{width:16px;height:16px;}
+
+.gf-btn--primary{
+  background:var(--gf-blue-600);border-color:var(--gf-blue-600);color:#fff;
+}
+.gf-btn--primary:hover{background:var(--gf-blue-700);border-color:var(--gf-blue-700);}
+
+.gf-btn--sm{min-height:34px;padding:0 12px;font-size:13px;}
+.gf-btn--sm svg{width:14px;height:14px;}
+
+.gf-btn--danger{background:var(--gf-red-50);border-color:var(--gf-red-100);color:var(--gf-red-600);}
+.gf-btn--danger:hover{background:var(--gf-red-100);}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+.gf-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 10px;border-radius:9999px;
+  font-size:12px;font-weight:600;
+  border:1px solid transparent;
+}
+.gf-badge--emerald{background:var(--gf-emerald-50);color:var(--gf-emerald-700);border-color:var(--gf-emerald-200);}
+.gf-badge--amber{background:var(--gf-amber-50);color:var(--gf-amber-700);border-color:var(--gf-amber-100);}
+.gf-badge--red{background:var(--gf-red-50);color:var(--gf-red-700);border-color:var(--gf-red-100);}
+.gf-badge--sky{background:var(--gf-sky-50);color:var(--gf-sky-700);border-color:var(--gf-sky-100);}
+.gf-badge--gray{background:var(--gf-gray-100);color:var(--gf-gray-600);border-color:var(--gf-gray-200);}
+.gf-badge--violet{background:var(--gf-violet-50);color:var(--gf-violet-700);border-color:var(--gf-violet-100);}
+.gf-badge--blue{background:var(--gf-blue-50);color:var(--gf-blue-600);border-color:var(--gf-blue-100);}
+
+/* Status badges (non-pill, for article status) */
+.gf-status{
+  display:inline-flex;align-items:center;
+  padding:2px 10px;border-radius:9999px;
+  font-size:12px;font-weight:600;
+  border:1px solid transparent;
+}
+.gf-status--published{background:var(--gf-emerald-100);color:var(--gf-emerald-800);border-color:var(--gf-emerald-200);}
+.gf-status--draft{background:var(--gf-gray-100);color:var(--gf-gray-700);border-color:var(--gf-gray-200);}
+.gf-status--review{background:var(--gf-amber-100);color:var(--gf-amber-800);border-color:var(--gf-amber-100);}
+
+/* GEO Score badge */
+.gf-score{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:9999px;
+  font-size:12px;font-weight:700;
+}
+.gf-score--excellent{background:var(--gf-emerald-50);color:var(--gf-emerald-700);border:1px solid var(--gf-emerald-200);}
+.gf-score--good{background:var(--gf-amber-50);color:var(--gf-amber-700);border:1px solid var(--gf-amber-100);}
+.gf-score--poor{background:var(--gf-red-50);color:var(--gf-red-700);border:1px solid var(--gf-red-100);}
+.gf-score--none{background:var(--gf-gray-100);color:var(--gf-gray-500);border:1px solid var(--gf-gray-200);}
+
+/* ============================================================
+   Table
+   ============================================================ */
+.gf-table{width:100%;min-width:960px;border-collapse:collapse;table-layout:fixed;}
+.gf-table thead{background:var(--gf-gray-50);}
+.gf-table th{
+  padding:10px 16px;text-align:left;
+  font-size:12px;font-weight:600;color:var(--gf-gray-500);
+  text-transform:uppercase;letter-spacing:.04em;
+  border-bottom:1px solid var(--gf-gray-200);
+}
+.gf-table td{
+  padding:14px 16px;font-size:14px;
+  border-bottom:1px solid var(--gf-gray-100);
+  color:var(--gf-gray-700);
+  vertical-align:middle;
+}
+.gf-table tbody tr{cursor:pointer;transition:background .1s;}
+.gf-table tbody tr:hover{background:var(--gf-gray-50);}
+.gf-table .td-title{color:var(--gf-gray-900);font-weight:600;}
+
+/* ============================================================
+   Page sections (SPA-like navigation)
+   ============================================================ */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ============================================================
+   Article detail — two column layout
+   ============================================================ */
+.detail-grid{
+  display:grid;
+  grid-template-columns:1fr 400px;
+  gap:24px;
+  align-items:start;
+}
+
+.article-body-preview{
+  font-size:14px;line-height:1.85;color:var(--gf-gray-700);
+  max-height:360px;overflow:hidden;position:relative;
+}
+.article-body-preview::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:80px;
+  background:linear-gradient(transparent,#fff);
+}
+.article-body-preview h1{font-size:22px;font-weight:700;color:var(--gf-gray-900);margin-bottom:12px;}
+.article-body-preview h2{font-size:17px;font-weight:650;color:var(--gf-gray-900);margin:18px 0 8px;}
+.article-body-preview h3{font-size:15px;font-weight:600;color:var(--gf-gray-800);margin:14px 0 6px;}
+.article-body-preview p{margin-bottom:10px;}
+.article-body-preview strong{color:var(--gf-gray-900);}
+
+/* ============================================================
+   Diagnosis panel (right column)
+   ============================================================ */
+.diag-score-card{
+  background:#fff;border:1px solid var(--gf-gray-200);
+  border-radius:var(--gf-radius-control);box-shadow:var(--gf-shadow-surface);
+  overflow:hidden;margin-bottom:20px;
+}
+.diag-score-card__header{
+  padding:14px 20px;border-bottom:1px solid var(--gf-gray-100);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.diag-score-card__title{font-size:14px;font-weight:650;color:var(--gf-gray-900);display:flex;align-items:center;gap:6px;}
+.diag-score-card__title svg{width:16px;height:16px;color:var(--gf-blue-600);}
+
+.diag-score-body{padding:20px;}
+
+/* Score ring */
+.score-ring{display:flex;align-items:center;gap:28px;}
+.score-ring__circle{position:relative;width:120px;height:120px;flex-shrink:0;}
+.score-ring__circle svg{transform:rotate(-90deg);width:120px;height:120px;}
+.score-ring__circle .ring-bg{fill:none;stroke:var(--gf-gray-200);stroke-width:10;}
+.score-ring__circle .ring-fg{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s ease;}
+.score-ring__label{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;
+}
+.score-ring__value{font-size:32px;font-weight:700;line-height:1;color:var(--gf-gray-900);}
+.score-ring__unit{font-size:11px;color:var(--gf-gray-400);margin-top:1px;}
+.score-ring__grade{font-size:13px;font-weight:650;margin-top:3px;}
+
+/* Dimension bars */
+.dim-bars{flex:1;display:flex;flex-direction:column;gap:10px;}
+.dim-row{display:flex;align-items:center;gap:10px;}
+.dim-row__name{width:72px;font-size:12px;font-weight:600;color:var(--gf-gray-600);flex-shrink:0;}
+.dim-row__track{flex:1;height:6px;background:var(--gf-gray-200);border-radius:3px;overflow:hidden;}
+.dim-row__fill{height:100%;border-radius:3px;transition:width 1s ease;}
+.dim-row__score{width:44px;text-align:right;font-size:12px;font-weight:700;color:var(--gf-gray-700);flex-shrink:0;}
+
+/* Diagnosis tabs */
+.diag-tabs{
+  display:flex;gap:0;
+  border-bottom:1px solid var(--gf-gray-200);
+  margin-bottom:0;
+}
+.diag-tab{
+  padding:10px 18px;font-size:13px;font-weight:600;
+  color:var(--gf-gray-500);cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:color .12s,border-color .12s;
+  display:flex;align-items:center;gap:5px;
+}
+.diag-tab:hover{color:var(--gf-gray-700);}
+.diag-tab[aria-selected="true"]{color:var(--gf-blue-600);border-bottom-color:var(--gf-blue-600);}
+.diag-tab svg{width:14px;height:14px;}
+
+.diag-tab-panel{display:none;padding:16px 0 0;}
+.diag-tab-panel[aria-hidden="false"]{display:block;}
+
+/* Finding items */
+.finding{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--gf-gray-100);
+}
+.finding:last-child{border-bottom:none;}
+.finding__icon{
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;font-size:12px;
+}
+.finding__icon--pass{background:var(--gf-emerald-50);color:var(--gf-emerald-600);}
+.finding__icon--warn{background:var(--gf-amber-50);color:var(--gf-amber-600);}
+.finding__icon--fail{background:var(--gf-red-50);color:var(--gf-red-600);}
+.finding__icon svg{width:14px;height:14px;}
+.finding__body{flex:1;min-width:0;}
+.finding__title{font-size:13px;font-weight:600;color:var(--gf-gray-800);}
+.finding__desc{font-size:12px;color:var(--gf-gray-500);margin-top:2px;line-height:1.5;}
+.finding__tag{
+  display:inline-flex;align-items:center;
+  margin-top:4px;padding:1px 8px;border-radius:4px;
+  font-size:11px;font-weight:600;
+  background:var(--gf-gray-100);color:var(--gf-gray-500);
+}
+
+/* Recommendation items */
+.rec{
+  padding:14px;border:1px solid var(--gf-gray-200);
+  border-radius:var(--gf-radius-control);
+  margin-bottom:10px;transition:border-color .12s,box-shadow .12s;
+}
+.rec:hover{border-color:var(--gf-blue-200);box-shadow:var(--gf-shadow-surface);}
+.rec__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.rec__title{font-size:13px;font-weight:650;color:var(--gf-gray-900);}
+.rec__impact{
+  font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;
+}
+.rec__impact--high{background:var(--gf-red-50);color:var(--gf-red-600);}
+.rec__impact--medium{background:var(--gf-amber-50);color:var(--gf-amber-600);}
+.rec__impact--low{background:var(--gf-gray-100);color:var(--gf-gray-500);}
+.rec__desc{font-size:12px;color:var(--gf-gray-600);line-height:1.55;margin-bottom:8px;}
+.rec__fix{
+  font-size:12px;color:var(--gf-blue-700);
+  background:var(--gf-blue-50);
+  padding:10px 12px;border-radius:var(--gf-radius-nav);
+  line-height:1.6;
+  display:flex;align-items:flex-start;gap:6px;
+}
+.rec__fix svg{width:14px;height:14px;flex-shrink:0;margin-top:2px;color:var(--gf-blue-500);}
+
+/* History items */
+.hist{
+  display:flex;align-items:center;gap:14px;
+  padding:10px 0;border-bottom:1px solid var(--gf-gray-100);
+}
+.hist:last-child{border-bottom:none;}
+.hist__score{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;flex-shrink:0;
+}
+.hist__info{flex:1;}
+.hist__label{font-size:13px;font-weight:600;color:var(--gf-gray-800);}
+.hist__meta{font-size:12px;color:var(--gf-gray-500);}
+.hist__delta{
+  font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;
+}
+.hist__delta--up{background:var(--gf-emerald-50);color:var(--gf-emerald-600);}
+.hist__delta--down{background:var(--gf-red-50);color:var(--gf-red-600);}
+.hist__delta--base{background:var(--gf-gray-100);color:var(--gf-gray-500);font-weight:500;}
+
+/* Empty state */
+.diag-empty{
+  text-align:center;padding:36px 20px;
+}
+.diag-empty__icon{
+  width:48px;height:48px;border-radius:50%;
+  background:var(--gf-gray-100);color:var(--gf-gray-400);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;
+}
+.diag-empty__icon svg{width:22px;height:22px;}
+.diag-empty__title{font-size:14px;font-weight:600;color:var(--gf-gray-700);margin-bottom:4px;}
+.diag-empty__desc{font-size:13px;color:var(--gf-gray-500);}
+
+/* ============================================================
+   Settings page
+   ============================================================ */
+.settings-panel{
+  background:#fff;border:1px solid var(--gf-gray-200);
+  border-radius:var(--gf-radius-control);box-shadow:var(--gf-shadow-surface);
+  overflow:hidden;margin-bottom:24px;
+}
+.settings-panel__head{
+  padding:20px 24px;border-bottom:1px solid var(--gf-gray-100);
+}
+.settings-panel__head h2{font-size:17px;font-weight:650;color:var(--gf-gray-900);}
+.settings-panel__head p{font-size:13px;color:var(--gf-gray-500);margin-top:2px;}
+
+.settings-row{
+  display:flex;align-items:center;gap:16px;
+  padding:16px 24px;
+  border-bottom:1px solid var(--gf-gray-100);
+}
+.settings-row:last-child{border-bottom:none;}
+.settings-row__label{width:100px;font-size:13px;font-weight:600;color:var(--gf-gray-700);flex-shrink:0;}
+.settings-row__slider{flex:1;}
+.settings-row__value{
+  width:52px;text-align:right;
+  font-size:14px;font-weight:700;color:var(--gf-blue-600);
+}
+
+/* Range slider styling */
+input[type="range"]{
+  -webkit-appearance:none;width:100%;height:6px;
+  background:var(--gf-gray-200);border-radius:3px;outline:none;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--gf-blue-600);
+  cursor:pointer;border:2px solid #fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+
+.settings-total{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 24px;background:var(--gf-gray-50);
+  border-top:1px solid var(--gf-gray-200);
+}
+.settings-total__label{font-size:14px;font-weight:600;color:var(--gf-gray-700);}
+.settings-total__value{font-size:18px;font-weight:700;color:var(--gf-blue-600);}
+.settings-total__value--error{color:var(--gf-red-600);}
+
+/* Checkbox grid */
+.check-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+  padding:16px 24px;
+}
+.check-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;border:1px solid var(--gf-gray-200);
+  border-radius:var(--gf-radius-nav);cursor:pointer;
+  font-size:13px;color:var(--gf-gray-700);
+  transition:border-color .12s,background .12s;
+}
+.check-item:hover{border-color:var(--gf-gray-300);background:var(--gf-gray-50);}
+.check-item input[type="checkbox"]{
+  width:16px;height:16px;accent-color:var(--gf-blue-600);cursor:pointer;
+}
+.check-item__code{
+  font-size:11px;font-weight:700;color:var(--gf-gray-400);
+  min-width:36px;
+}
+
+/* ============================================================
+   Progress overlay (diagnosis running)
+   ============================================================ */
+.gf-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(15,23,42,.48);z-index:120;
+  align-items:center;justify-content:center;
+}
+.gf-overlay.show{display:flex;}
+.gf-modal{
+  background:#fff;border-radius:var(--gf-radius-focus);
+  box-shadow:0 24px 72px rgba(15,23,42,.28);
+  max-width:440px;width:90%;overflow:hidden;
+}
+.gf-modal__head{
+  padding:20px 24px;border-bottom:1px solid var(--gf-gray-100);
+  display:flex;align-items:center;gap:10px;
+}
+.gf-modal__head h3{font-size:16px;font-weight:650;color:var(--gf-gray-900);}
+.gf-modal__head svg{width:20px;height:20px;color:var(--gf-blue-600);}
+.gf-modal__body{padding:24px;}
+
+.progress-track{
+  height:8px;background:var(--gf-gray-200);border-radius:4px;overflow:hidden;
+  margin-bottom:14px;
+}
+.progress-fill{
+  height:100%;background:var(--gf-blue-600);border-radius:4px;
+  transition:width .4s ease;width:0%;
+}
+.progress-step{font-size:13px;color:var(--gf-gray-500);text-align:center;}
+.progress-steps-list{margin-top:16px;display:flex;flex-direction:column;gap:6px;}
+.progress-step-item{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--gf-gray-400);
+}
+.progress-step-item.done{color:var(--gf-emerald-600);}
+.progress-step-item.active{color:var(--gf-blue-600);font-weight:600;}
+.progress-step-item svg{width:14px;height:14px;flex-shrink:0;}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.gf-footer{
+  border-top:1px solid var(--gf-gray-200);background:var(--gf-gray-50);
+  min-height:48px;padding:12px 48px;
+  font-size:12px;color:var(--gf-gray-500);
+  display:flex;align-items:center;gap:12px;
+}
+.gf-footer a{color:var(--gf-gray-600);text-decoration:none;}
+.gf-footer a:hover{color:var(--gf-blue-600);text-decoration:underline;}
+.gf-footer__dot{color:var(--gf-gray-300);}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.fade-up{animation:fadeUp .25s ease both;}
+
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media(max-width:1180px){
+  .gf-topbar,.gf-content,.gf-footer{padding-left:24px;padding-right:24px;}
+  .detail-grid{grid-template-columns:1fr;}
+}
+@media(max-width:767px){
+  .gf-sidebar{transform:translateX(-100%);transition:transform .2s;}
+  .gf-sidebar.open{transform:none;box-shadow:var(--gf-shadow-menu);}
+  .gf-shell__body{margin-left:0;}
+  .gf-topbar,.gf-content,.gf-footer{padding-left:16px;padding-right:16px;}
+  .check-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="gf-shell">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="gf-sidebar">
+    <div class="gf-sidebar__brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gf-blue-600)"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      <span class="gf-wordmark">GEO<span class="gf-wordmark-dot">Flow</span></span>
+    </div>
+
+    <nav class="gf-sidebar__nav">
+      <!-- Workspace -->
+      <div class="gf-sidebar__group">
+        <a class="gf-sidebar__link" data-nav="workspace">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/></svg>
+          AI 工作台
+        </a>
+      </div>
+
+      <!-- Data -->
+      <div class="gf-sidebar__group">
+        <div class="gf-sidebar__heading">数据</div>
+        <div class="gf-sidebar__items">
+          <a class="gf-sidebar__link" data-nav="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            数据中心
+          </a>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="gf-sidebar__group">
+        <div class="gf-sidebar__heading">内容</div>
+        <div class="gf-sidebar__items">
+          <a class="gf-sidebar__link" data-nav="tasks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            任务
+          </a>
+          <a class="gf-sidebar__link" data-nav="articles" aria-current="page" onclick="showPage('articles')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            文章
+          </a>
+          <a class="gf-sidebar__link" data-nav="materials">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>
+            素材
+          </a>
+        </div>
+      </div>
+
+      <!-- Distribution -->
+      <div class="gf-sidebar__group">
+        <div class="gf-sidebar__heading">分发</div>
+        <div class="gf-sidebar__items">
+          <a class="gf-sidebar__link" data-nav="distribution">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-1.6-1.6-1.6-4.8 0-6.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c1.6 1.6 1.6 4.8 0 6.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19.1"/></svg>
+            渠道
+          </a>
+          <a class="gf-sidebar__link" data-nav="links">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            链接池
+          </a>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="gf-sidebar__group">
+        <div class="gf-sidebar__heading">系统</div>
+        <div class="gf-sidebar__items">
+          <a class="gf-sidebar__link" data-nav="ai-config">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m6.3 6.3 2.8 2.8"/><path d="M2 12h4"/><path d="m6.3 17.7 2.8-2.8"/><path d="M12 18v4"/><path d="m17.7 17.7-2.8-2.8"/><path d="M18 12h4"/><path d="m17.7 6.3-2.8 2.8"/></svg>
+            AI 配置
+          </a>
+          <a class="gf-sidebar__link" data-nav="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            站点设置
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="gf-sidebar__account-bar">
+      <div class="gf-avatar">A</div>
+      <span class="gf-account-name">Admin</span>
+      <button class="gf-icon-btn" title="设置" style="width:32px;height:32px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===================== SHELL BODY ===================== -->
+  <div class="gf-shell__body">
+
+    <!-- Topbar -->
+    <header class="gf-topbar">
+      <div class="gf-topbar__identity">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+        <span class="gf-topbar__title" id="topbar-title">文章</span>
+      </div>
+      <div class="gf-topbar__actions">
+        <button class="gf-icon-btn" title="通知">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="gf-lang-btn">ZH</button>
+        <div class="gf-user-btn">
+          <div class="gf-avatar" style="width:32px;height:32px;font-size:12px;">A</div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="gf-main">
+      <div class="gf-content">
+
+        <!-- ========== PAGE: Articles List ========== -->
+        <div id="page-articles" class="page active">
+          <div class="gf-page-header">
+            <div class="gf-eyebrow">内容管理</div>
+            <h1>文章</h1>
+            <p>管理所有已发布、审核中和草稿状态的文章，查看 GEO 诊断评分和 AI 质检结果。</p>
+          </div>
+
+          <!-- Section subnav -->
+          <nav class="gf-section-nav">
+            <a class="gf-section-nav__link" aria-current="page">
+              <span class="nav-dot" style="background:var(--gf-blue-600)"></span>
+              文章列表
+            </a>
+            <a class="gf-section-nav__link">
+              <span class="nav-dot" style="background:var(--gf-gray-300)"></span>
+              主题
+            </a>
+            <a class="gf-section-nav__link">
+              <span class="nav-dot" style="background:var(--gf-gray-300)"></span>
+              分类
+            </a>
+            <a class="gf-section-nav__link">
+              <span class="nav-dot" style="background:var(--gf-gray-300)"></span>
+              审核中心
+            </a>
+            <a class="gf-section-nav__link">
+              <span class="nav-dot" style="background:var(--gf-gray-300)"></span>
+              回收站
+            </a>
+          </nav>
+
+          <!-- Article table card -->
+          <div class="gf-card">
+            <div class="gf-card__header">
+              <span class="gf-card__title">全部文章</span>
+              <div style="display:flex;gap:8px;">
+                <button class="gf-btn gf-btn--sm">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  筛选
+                </button>
+                <button class="gf-btn gf-btn--primary gf-btn--sm" onclick="showPage('article-detail')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                  新建文章
+                </button>
+              </div>
+            </div>
+            <div class="gf-card__body gf-card__body--flush" style="overflow-x:auto;">
+              <table class="gf-table">
+                <colgroup>
+                  <col style="width:40%">
+                  <col style="width:12%">
+                  <col style="width:10%">
+                  <col style="width:10%">
+                  <col style="width:10%">
+                  <col style="width:8%">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>标题</th>
+                    <th>分类</th>
+                    <th>状态</th>
+                    <th>AI 质检</th>
+                    <th>GEO 评分</th>
+                    <th>更新</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr onclick="showPage('article-detail')">
+                    <td class="td-title">2026 年企业 GEO 运营完全指南</td>
+                    <td>行业知识</td>
+                    <td><span class="gf-status gf-status--published">已发布</span></td>
+                    <td><span class="gf-badge gf-badge--emerald">通过</span></td>
+                    <td><span class="gf-score gf-score--good">72 分</span></td>
+                    <td style="color:var(--gf-gray-500);font-size:13px;">11-01</td>
+                  </tr>
+                  <tr onclick="showPage('article-detail')">
+                    <td class="td-title">AI 搜索时代的内容策略</td>
+                    <td>运营策略</td>
+                    <td><span class="gf-status gf-status--published">已发布</span></td>
+                    <td><span class="gf-badge gf-badge--emerald">通过</span></td>
+                    <td><span class="gf-score gf-score--excellent">85 分</span></td>
+                    <td style="color:var(--gf-gray-500);font-size:13px;">10-30</td>
+                  </tr>
+                  <tr onclick="showPage('article-detail')">
+                    <td class="td-title">如何用结构化数据提升 AI 引用率</td>
+                    <td>技术教程</td>
+                    <td><span class="gf-status gf-status--review">审核中</span></td>
+                    <td><span class="gf-badge gf-badge--amber">待复核</span></td>
+                    <td><span class="gf-score gf-score--poor">45 分</span></td>
+                    <td style="color:var(--gf-gray-500);font-size:13px;">10-29</td>
+                  </tr>
+                  <tr onclick="showPage('article-detail')">
+                    <td class="td-title">知识库建设最佳实践</td>
+                    <td>行业知识</td>
+                    <td><span class="gf-status gf-status--draft">草稿</span></td>
+                    <td><span class="gf-badge gf-badge--gray">未检测</span></td>
+                    <td><span class="gf-score gf-score--none">—</span></td>
+                    <td style="color:var(--gf-gray-500);font-size:13px;">10-28</td>
+                  </tr>
+                  <tr onclick="showPage('article-detail')">
+                    <td class="td-title">Schema.org 标记完全入门</td>
+                    <td>技术教程</td>
+                    <td><span class="gf-status gf-status--published">已发布</span></td>
+                    <td><span class="gf-badge gf-badge--emerald">通过</span></td>
+                    <td><span class="gf-score gf-score--excellent">91 分</span></td>
+                    <td style="color:var(--gf-gray-500);font-size:13px;">10-25</td>
+                  </tr>
+                  <tr onclick="showPage('article-detail')">
+                    <td class="td-title">GEO 与 SEO 的核心差异解析</td>
+                    <td>运营策略</td>
+                    <td><span class="gf-status gf-status--published">已发布</span></td>
+                    <td><span class="gf-badge gf-badge--amber">待复核</span></td>
+                    <td><span class="gf-score gf-score--good">68 分</span></td>
+                    <td style="color:var(--gf-gray-500);font-size:13px;">10-22</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== PAGE: Article Detail + Diagnosis ========== -->
+        <div id="page-article-detail" class="page">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+            <a onclick="showPage('articles')" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--gf-gray-500);cursor:pointer;text-decoration:none;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              文章
+            </a>
+            <span style="color:var(--gf-gray-300);font-size:13px;">/</span>
+            <span style="font-size:13px;color:var(--gf-gray-700);font-weight:500;">2026 年企业 GEO 运营完全指南</span>
+          </div>
+
+          <!-- Article header -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <h1 style="font-size:24px;font-weight:700;color:var(--gf-gray-900);">2026 年企业 GEO 运营完全指南</h1>
+                <span class="gf-status gf-status--published">已发布</span>
+                <span class="gf-badge gf-badge--emerald">AI 通过</span>
+              </div>
+              <div style="font-size:13px;color:var(--gf-gray-500);">
+                行业知识 · 作者：张三 · 更新于 2026-11-01 10:30
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="gf-btn gf-btn--sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                编辑
+              </button>
+              <button class="gf-btn gf-btn--primary gf-btn--sm" id="btn-run-diagnosis" onclick="runDiagnosis()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                运行 GEO 诊断
+              </button>
+            </div>
+          </div>
+
+          <!-- Two-column layout -->
+          <div class="detail-grid">
+
+            <!-- Left: Article body -->
+            <div class="gf-card">
+              <div class="gf-card__header">
+                <span class="gf-card__title">文章正文</span>
+                <span style="font-size:12px;color:var(--gf-gray-400);">预览模式</span>
+              </div>
+              <div class="gf-card__body">
+                <div class="article-body-preview">
+                  <h1>2026 年企业 GEO 运营完全指南</h1>
+                  <h2>什么是 GEO？</h2>
+                  <p>GEO（Generative Engine Optimization，生成式引擎优化）是继 SEO 之后的新一代内容优化策略。与传统 SEO 关注搜索引擎排名不同，GEO 关注的是内容如何被 AI 大模型（如 ChatGPT、Google AI Overviews、豆包等）引用和推荐。</p>
+                  <h2>GEO 的核心原则</h2>
+                  <p><strong>1. 可信知识优先</strong>：AI 引擎倾向于引用有明确来源、数据支撑的内容。企业需要确保文章中的每个关键论述都有知识库中的可信来源作为支撑。</p>
+                  <p><strong>2. 结构化表达</strong>：使用清晰的标题层级、列表、表格和定义性语句。结构化内容更容易被 AI 引擎解析和引用。</p>
+                  <p><strong>3. 引用友好</strong>：包含可被直接引用的数据点、统计数字和权威来源。AI 引擎在生成回答时，会优先引用包含明确数据和权威来源的内容。</p>
+                  <h2>企业 GEO 运营框架</h2>
+                  <p>企业开展 GEO 运营需要建立完整的内容生产链路：从可信知识库建设，到 AI 辅助内容生产，再到质量门禁和人工审核，最后通过多渠道分发触达目标用户。</p>
+                  <h3>第一步：建设可信知识库</h3>
+                  <p>知识库是 GEO 运营的基础设施。企业需要将产品文档、行业报告、客户案例、FAQ 等资料结构化存储，并建立知识之间的关联关系。知识库的质量直接决定了 AI 生成内容的可信度。</p>
+                  <h3>第二步：AI 辅助内容生产</h3>
+                  <p>基于知识库，利用 AI 模型生成初稿。AI 可以快速产出符合 GEO 原则的内容框架，但最终需要人工审核确保准确性和品牌一致性。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Diagnosis panel -->
+            <div>
+              <!-- Score card (hidden before diagnosis) -->
+              <div class="diag-score-card" id="diag-score" style="display:none;">
+                <div class="diag-score-card__header">
+                  <span class="diag-score-card__title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                    GEO 诊断评分
+                  </span>
+                  <span class="gf-badge gf-badge--gray" id="diag-time" style="font-size:11px;">刚刚</span>
+                </div>
+                <div class="diag-score-body">
+                  <div class="score-ring">
+                    <div class="score-ring__circle">
+                      <svg viewBox="0 0 120 120">
+                        <circle class="ring-bg" cx="60" cy="60" r="50"/>
+                        <circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="50"
+                          stroke-dasharray="314" stroke-dashoffset="314"
+                          stroke="var(--gf-amber-600)"/>
+                      </svg>
+                      <div class="score-ring__label">
+                        <div class="score-ring__value" id="ring-value">0</div>
+                        <div class="score-ring__unit">/ 100</div>
+                        <div class="score-ring__grade" id="ring-grade" style="color:var(--gf-amber-600);">—</div>
+                      </div>
+                    </div>
+                    <div class="dim-bars">
+                      <div class="dim-row">
+                        <span class="dim-row__name">内容结构</span>
+                        <div class="dim-row__track"><div class="dim-row__fill" id="bar-cs" style="width:0;background:var(--gf-emerald-500);"></div></div>
+                        <span class="dim-row__score" id="val-cs">—</span>
+                      </div>
+                      <div class="dim-row">
+                        <span class="dim-row__name">知识对齐</span>
+                        <div class="dim-row__track"><div class="dim-row__fill" id="bar-ka" style="width:0;background:var(--gf-blue-500);"></div></div>
+                        <span class="dim-row__score" id="val-ka">—</span>
+                      </div>
+                      <div class="dim-row">
+                        <span class="dim-row__name">技术 GEO</span>
+                        <div class="dim-row__track"><div class="dim-row__fill" id="bar-tg" style="width:0;background:var(--gf-amber-600);"></div></div>
+                        <span class="dim-row__score" id="val-tg">—</span>
+                      </div>
+                      <div class="dim-row">
+                        <span class="dim-row__name">AI 可见度</span>
+                        <div class="dim-row__track"><div class="dim-row__fill" id="bar-av" style="width:0;background:var(--gf-violet-500);"></div></div>
+                        <span class="dim-row__score" id="val-av">—</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Diagnosis detail card (hidden before diagnosis) -->
+              <div class="gf-card" id="diag-detail" style="display:none;">
+                <div class="gf-card__body" style="padding:0 20px 20px;">
+                  <!-- Tabs -->
+                  <div class="diag-tabs" role="tablist">
+                    <div class="diag-tab" role="tab" aria-selected="true" onclick="switchDiagTab(0)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      检查项
+                    </div>
+                    <div class="diag-tab" role="tab" aria-selected="false" onclick="switchDiagTab(1)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m6.3 6.3 2.8 2.8"/><path d="M2 12h4"/><path d="m6.3 17.7 2.8-2.8"/><path d="M12 18v4"/><path d="m17.7 17.7-2.8-2.8"/><path d="M18 12h4"/><path d="m17.7 6.3-2.8 2.8"/></svg>
+                      改进建议
+                    </div>
+                    <div class="diag-tab" role="tab" aria-selected="false" onclick="switchDiagTab(2)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                      历史
+                    </div>
+                  </div>
+
+                  <!-- Tab panel: Findings -->
+                  <div class="diag-tab-panel" aria-hidden="false" id="diag-panel-0">
+                    <div id="findings-list"></div>
+                  </div>
+
+                  <!-- Tab panel: Recommendations -->
+                  <div class="diag-tab-panel" aria-hidden="true" id="diag-panel-1">
+                    <div id="recommendations-list"></div>
+                  </div>
+
+                  <!-- Tab panel: History -->
+                  <div class="diag-tab-panel" aria-hidden="true" id="diag-panel-2">
+                    <div id="history-list"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Empty state (shown before diagnosis) -->
+              <div class="gf-card" id="diag-empty">
+                <div class="gf-card__body">
+                  <div class="diag-empty">
+                    <div class="diag-empty__icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    </div>
+                    <div class="diag-empty__title">尚未运行 GEO 诊断</div>
+                    <div class="diag-empty__desc">点击右上角「运行 GEO 诊断」按钮<br>自动检查文章的 GEO 就绪程度</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ========== PAGE: Diagnosis Settings ========== -->
+        <div id="page-diagnosis-settings" class="page">
+          <div class="gf-page-header">
+            <div class="gf-eyebrow">GEO 诊断</div>
+            <h1>诊断设置</h1>
+            <p>配置四维评分体系的权重分配和检查项开关。权重总和须为 100%。</p>
+          </div>
+
+          <!-- Weight settings -->
+          <div class="settings-panel">
+            <div class="settings-panel__head">
+              <h2>维度权重</h2>
+              <p>调整各诊断维度在总分中的占比</p>
+            </div>
+            <div class="settings-row">
+              <span class="settings-row__label">内容结构</span>
+              <input type="range" min="0" max="100" value="25" id="w-cs" oninput="syncWeights()">
+              <span class="settings-row__value" id="wv-cs">25%</span>
+            </div>
+            <div class="settings-row">
+              <span class="settings-row__label">知识对齐</span>
+              <input type="range" min="0" max="100" value="30" id="w-ka" oninput="syncWeights()">
+              <span class="settings-row__value" id="wv-ka">30%</span>
+            </div>
+            <div class="settings-row">
+              <span class="settings-row__label">技术 GEO</span>
+              <input type="range" min="0" max="100" value="20" id="w-tg" oninput="syncWeights()">
+              <span class="settings-row__value" id="wv-tg">20%</span>
+            </div>
+            <div class="settings-row">
+              <span class="settings-row__label">AI 可见度</span>
+              <input type="range" min="0" max="100" value="25" id="w-av" oninput="syncWeights()">
+              <span class="settings-row__value" id="wv-av">25%</span>
+            </div>
+            <div class="settings-total">
+              <span class="settings-total__label">权重总计</span>
+              <span class="settings-total__value" id="w-total">100%</span>
+            </div>
+          </div>
+
+          <!-- Check item toggles -->
+          <div class="settings-panel">
+            <div class="settings-panel__head">
+              <h2>检查项开关</h2>
+              <p>启用或禁用特定的诊断检查项</p>
+            </div>
+            <div class="check-grid">
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">CS-01</span> H1 标题存在且唯一</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">CS-02</span> 标题层级无跳跃</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">CS-03</span> 段落平均长度 ≤ 200 字</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">CS-04</span> 包含 FAQ 或定义性语句</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">KA-01</span> 知识库事实覆盖率 ≥ 60%</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">KA-02</span> 核心术语频次 ≥ 3</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">KA-03</span> 无知识库矛盾内容</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">TG-01</span> llms.txt 可达</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">TG-02</span> Schema.org JSON-LD 完整</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">TG-03</span> 规范化链接正确</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">AV-01</span> 关键词 AI 搜索前 10</label>
+              <label class="check-item"><input type="checkbox" checked><span class="check-item__code">AV-02</span> 竞品引用占比 ≤ 50%</label>
+            </div>
+            <div style="padding:14px 24px;border-top:1px solid var(--gf-gray-100);display:flex;justify-content:flex-end;">
+              <button class="gf-btn gf-btn--primary" onclick="saveSettings()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                保存设置
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <footer class="gf-footer">
+        <span>GEOFlow 3.0</span>
+        <span class="gf-footer__dot">·</span>
+        <a href="#">文档</a>
+        <span class="gf-footer__dot">·</span>
+        <a href="#">API</a>
+        <span class="gf-footer__dot">·</span>
+        <a href="#">CLI</a>
+        <span style="margin-left:auto;">GEO 诊断原型 v1.0</span>
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<!-- ===================== PROGRESS OVERLAY ===================== -->
+<div class="gf-overlay" id="diag-overlay">
+  <div class="gf-modal">
+    <div class="gf-modal__head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <h3>正在运行 GEO 诊断</h3>
+    </div>
+    <div class="gf-modal__body">
+      <div class="progress-track">
+        <div class="progress-fill" id="prog-fill"></div>
+      </div>
+      <div class="progress-step" id="prog-step-text">准备中...</div>
+      <div class="progress-steps-list" id="prog-steps-list">
+        <div class="progress-step-item" data-step="0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+          分析内容结构
+        </div>
+        <div class="progress-step-item" data-step="1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+          对比知识库事实
+        </div>
+        <div class="progress-step-item" data-step="2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+          检查技术 GEO 配置
+        </div>
+        <div class="progress-step-item" data-step="3">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+          查询 AI 可见度数据
+        </div>
+        <div class="progress-step-item" data-step="4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+          生成评分与建议
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Navigation
+   ============================================================ */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+
+  // Update topbar title
+  const titles = {
+    'articles': '文章',
+    'article-detail': '文章详情',
+    'diagnosis-settings': '诊断设置'
+  };
+  document.getElementById('topbar-title').textContent = titles[id] || 'GEOFlow';
+
+  // Update sidebar active
+  document.querySelectorAll('.gf-sidebar__link').forEach(a => a.removeAttribute('aria-current'));
+  if (id === 'articles' || id === 'article-detail') {
+    document.querySelector('.gf-sidebar__link[data-nav="articles"]').setAttribute('aria-current', 'page');
+  }
+}
+
+/* ============================================================
+   Diagnosis tabs
+   ============================================================ */
+function switchDiagTab(idx) {
+  document.querySelectorAll('.diag-tab').forEach((t, i) => {
+    t.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+  });
+  document.querySelectorAll('.diag-tab-panel').forEach((p, i) => {
+    p.setAttribute('aria-hidden', i === idx ? 'false' : 'true');
+  });
+}
+
+/* ============================================================
+   Mock data
+   ============================================================ */
+const MOCK = {
+  total: 72,
+  grade: '良好',
+  gradeColor: 'var(--gf-amber-600)',
+  dims: {
+    cs: { score: 18, max: 25, pct: 72 },
+    ka: { score: 22, max: 30, pct: 73 },
+    tg: { score: 16, max: 20, pct: 80 },
+    av: { score: 16, max: 25, pct: 64 }
+  },
+  findings: [
+    { id:'CS-01', pass:true, sev:'high', dim:'内容结构', title:'H1 标题存在且唯一', desc:'文章包含唯一的 H1 标题「2026 年企业 GEO 运营完全指南」' },
+    { id:'CS-02', pass:true, sev:'medium', dim:'内容结构', title:'标题层级无跳跃', desc:'H1 → H2 → H3 层级结构完整，无跳级' },
+    { id:'CS-03', pass:false, sev:'low', dim:'内容结构', title:'段落平均长度 ≤ 200 字', desc:'当前平均段落长度 280 字，部分段落过长不利于 AI 提取' },
+    { id:'CS-04', pass:false, sev:'medium', dim:'内容结构', title:'包含 FAQ 或定义性语句', desc:'未检测到 FAQ 格式或定义性语句（"X 是指..."）' },
+    { id:'KA-01', pass:true, sev:'high', dim:'知识对齐', title:'知识库事实覆盖率 ≥ 60%', desc:'已覆盖知识库 12/15 个关键事实（80%）' },
+    { id:'KA-02', pass:true, sev:'medium', dim:'知识对齐', title:'核心术语频次 ≥ 3', desc:'"GEO" 出现 8 次，"生成式引擎优化" 出现 3 次' },
+    { id:'KA-03', pass:true, sev:'high', dim:'知识对齐', title:'无知识库矛盾内容', desc:'未检测到与知识库矛盾的内容' },
+    { id:'TG-01', pass:true, sev:'high', dim:'技术 GEO', title:'llms.txt 可达', desc:'/llms.txt 返回 200，包含本站 3 个栏目' },
+    { id:'TG-02', pass:false, sev:'medium', dim:'技术 GEO', title:'Schema.org JSON-LD 完整', desc:'缺少 Article 类型的 dateModified 和 author 字段' },
+    { id:'TG-03', pass:true, sev:'medium', dim:'技术 GEO', title:'规范化链接正确', desc:'canonical 链接指向正确 URL' },
+    { id:'AV-01', pass:false, sev:'high', dim:'AI 可见度', title:'关键词进入 AI 搜索前 10', desc:'核心词"GEO 运营"在豆包搜索中排名第 15 位' },
+    { id:'AV-02', pass:false, sev:'medium', dim:'AI 可见度', title:'竞品引用占比 ≤ 50%', desc:'竞品"XX 公司"在同类主题 AI 引用中占比 62%' }
+  ],
+  recs: [
+    { sev:'high', dim:'AI 可见度', title:'提升核心关键词的 AI 搜索排名', desc:'"GEO 运营"在豆包 AI 搜索中排名第 15，未进入前 10。AI 引擎倾向于引用排名靠前的内容。', impact:9, fix:'在文章开头和 H2 标题中增加"GEO 运营"关键词的自然出现频次；添加与"GEO 运营"相关的 FAQ 段落。' },
+    { sev:'high', dim:'内容结构', title:'添加 FAQ 或定义性语句模块', desc:'AI 引擎特别偏好引用 FAQ 格式和定义性语句。当前文章缺少这类结构化内容。', impact:8, fix:'在文章开头添加 2-3 个 FAQ 问答，如"什么是 GEO 运营？""GEO 运营和 SEO 有什么区别？"' },
+    { sev:'medium', dim:'技术 GEO', title:'补全 Schema.org JSON-LD 字段', desc:'当前 Article 类型的 JSON-LD 缺少 dateModified 和 author 字段，影响 AI 引擎对内容时效性和权威性的判断。', impact:5, fix:'在页面 head 中补全 JSON-LD：dateModified、author 字段。' },
+    { sev:'medium', dim:'AI 可见度', title:'降低竞品在 AI 引用中的占比', desc:'竞品"XX 公司"在"GEO 运营"相关 AI 搜索结果的引用占比达 62%，超过 50% 警戒线。', impact:7, fix:'针对竞品高频引用的内容角度，生产差异化内容；在知识库中补充竞品未覆盖的独家数据和案例。' },
+    { sev:'low', dim:'内容结构', title:'缩短过长段落', desc:'文章平均段落长度 280 字，超过 200 字的建议阈值。过长的段落不利于 AI 提取关键信息。', impact:3, fix:'将超过 200 字的段落拆分为 2-3 个短段落，每段聚焦一个核心观点。' }
+  ],
+  history: [
+    { id:103, score:72, grade:'良好', date:'2026-11-01 10:30', delta:null },
+    { id:102, score:65, grade:'一般', date:'2026-10-28 14:20', delta:'+7' },
+    { id:101, score:58, grade:'一般', date:'2026-10-25 09:15', delta:'+7' },
+    { id:100, score:45, grade:'较差', date:'2026-10-20 16:40', delta:'+13' },
+    { id:99,  score:38, grade:'较差', date:'2026-10-15 11:00', delta:'+7' }
+  ]
+};
+
+/* ============================================================
+   Run diagnosis simulation
+   ============================================================ */
+function runDiagnosis() {
+  const overlay = document.getElementById('diag-overlay');
+  const fill = document.getElementById('prog-fill');
+  const stepText = document.getElementById('prog-step-text');
+  const stepsList = document.getElementById('prog-steps-list');
+  const btn = document.getElementById('btn-run-diagnosis');
+
+  overlay.classList.add('show');
+  btn.disabled = true;
+  btn.style.opacity = '.6';
+  fill.style.width = '0%';
+
+  // Reset step items
+  stepsList.querySelectorAll('.progress-step-item').forEach(el => {
+    el.classList.remove('done', 'active');
+    el.querySelector('svg').innerHTML = '<circle cx="12" cy="12" r="10"/>';
+  });
+
+  const steps = [
+    { pct:15, text:'正在分析内容结构...', step:0 },
+    { pct:35, text:'正在对比知识库事实...', step:1 },
+    { pct:55, text:'正在检查技术 GEO 配置...', step:2 },
+    { pct:75, text:'正在查询 AI 可见度数据...', step:3 },
+    { pct:90, text:'正在生成评分与建议...', step:4 },
+    { pct:100, text:'诊断完成', step:-1 }
+  ];
+
+  let i = 0;
+  const timer = setInterval(() => {
+    if (i < steps.length) {
+      fill.style.width = steps[i].pct + '%';
+      stepText.textContent = steps[i].text;
+
+      // Mark previous step done
+      if (i > 0 && steps[i-1].step >= 0) {
+        const prevEl = stepsList.querySelector(`[data-step="${steps[i-1].step}"]`);
+        if (prevEl) {
+          prevEl.classList.remove('active');
+          prevEl.classList.add('done');
+          prevEl.querySelector('svg').innerHTML = '<path d="M20 6 9 17l-5-5"/>';
+        }
+      }
+
+      // Mark current step active
+      if (steps[i].step >= 0) {
+        const curEl = stepsList.querySelector(`[data-step="${steps[i].step}"]`);
+        if (curEl) {
+          curEl.classList.add('active');
+          curEl.querySelector('svg').innerHTML = '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>';
+        }
+      }
+
+      i++;
+    } else {
+      clearInterval(timer);
+
+      // Mark last step done
+      const lastDone = stepsList.querySelector(`[data-step="4"]`);
+      if (lastDone) {
+        lastDone.classList.remove('active');
+        lastDone.classList.add('done');
+        lastDone.querySelector('svg').innerHTML = '<path d="M20 6 9 17l-5-5"/>';
+      }
+
+      setTimeout(() => {
+        overlay.classList.remove('show');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> 重新诊断`;
+        showResults();
+      }, 600);
+    }
+  }, 650);
+}
+
+/* ============================================================
+   Show diagnosis results
+   ============================================================ */
+function showResults() {
+  document.getElementById('diag-empty').style.display = 'none';
+  document.getElementById('diag-score').style.display = 'block';
+  document.getElementById('diag-detail').style.display = 'block';
+  document.getElementById('diag-score').classList.add('fade-up');
+  document.getElementById('diag-detail').classList.add('fade-up');
+
+  const d = MOCK;
+
+  // Animate ring
+  const circ = 2 * Math.PI * 50; // ~314
+  const offset = circ - (d.total / 100) * circ;
+  setTimeout(() => {
+    const ring = document.getElementById('ring-fg');
+    ring.style.strokeDashoffset = offset;
+    ring.setAttribute('stroke', d.gradeColor);
+  }, 100);
+
+  // Animate score number
+  animateValue('ring-value', 0, d.total, 1000);
+
+  // Grade
+  const gradeEl = document.getElementById('ring-grade');
+  gradeEl.textContent = d.grade;
+  gradeEl.style.color = d.gradeColor;
+
+  // Dimension bars
+  setTimeout(() => {
+    ['cs','ka','tg','av'].forEach(k => {
+      const dim = d.dims[k];
+      document.getElementById('bar-' + k).style.width = dim.pct + '%';
+      document.getElementById('val-' + k).textContent = dim.score + '/' + dim.max;
+    });
+  }, 200);
+
+  // Render tabs
+  renderFindings(d.findings);
+  renderRecs(d.recs);
+  renderHistory(d.history);
+}
+
+function animateValue(elId, start, end, duration) {
+  const el = document.getElementById(elId);
+  const t0 = performance.now();
+  function tick(now) {
+    const p = Math.min((now - t0) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(start + (end - start) * eased);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   Render findings
+   ============================================================ */
+function renderFindings(findings) {
+  const el = document.getElementById('findings-list');
+  el.innerHTML = findings.map(f => {
+    const cls = f.pass ? 'pass' : (f.sev === 'high' ? 'fail' : 'warn');
+    const icon = f.pass
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+      : (f.sev === 'high'
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>');
+    return `<div class="finding fade-up">
+      <div class="finding__icon finding__icon--${cls}">${icon}</div>
+      <div class="finding__body">
+        <div class="finding__title">${f.title}</div>
+        <div class="finding__desc">${f.desc}</div>
+        <span class="finding__tag">${f.dim} · ${f.id}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   Render recommendations
+   ============================================================ */
+function renderRecs(recs) {
+  const el = document.getElementById('recommendations-list');
+  el.innerHTML = recs.map(r => {
+    const impCls = r.impact >= 8 ? 'high' : (r.impact >= 5 ? 'medium' : 'low');
+    const impLabel = r.impact >= 8 ? '高影响' : (r.impact >= 5 ? '中影响' : '低影响');
+    const sevColor = r.sev === 'high' ? 'var(--gf-red-600)' : (r.sev === 'medium' ? 'var(--gf-amber-600)' : 'var(--gf-gray-400)');
+    return `<div class="rec fade-up">
+      <div class="rec__head">
+        <div class="rec__title">
+          <span style="color:${sevColor};margin-right:4px;">●</span>${r.title}
+        </div>
+        <span class="rec__impact rec__impact--${impCls}">${impLabel} ${r.impact}/10</span>
+      </div>
+      <div class="rec__desc">${r.desc}</div>
+      <div class="rec__fix">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m6.3 6.3 2.8 2.8"/><path d="M2 12h4"/><path d="m6.3 17.7 2.8-2.8"/><path d="M12 18v4"/><path d="m17.7 17.7-2.8-2.8"/><path d="M18 12h4"/><path d="m17.7 6.3-2.8 2.8"/></svg>
+        <span>${r.fix}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   Render history
+   ============================================================ */
+function renderHistory(history) {
+  const el = document.getElementById('history-list');
+  el.innerHTML = history.map(h => {
+    const color = h.score >= 80 ? 'var(--gf-emerald-600)' : (h.score >= 60 ? 'var(--gf-amber-600)' : 'var(--gf-red-600)');
+    const bg = h.score >= 80 ? 'var(--gf-emerald-50)' : (h.score >= 60 ? 'var(--gf-amber-50)' : 'var(--gf-red-50)');
+    let deltaHtml;
+    if (h.delta === null) {
+      deltaHtml = '<span class="hist__delta hist__delta--base">基准</span>';
+    } else {
+      const up = h.delta.startsWith('+');
+      deltaHtml = `<span class="hist__delta hist__delta--${up ? 'up' : 'down'}">${h.delta}</span>`;
+    }
+    return `<div class="hist fade-up">
+      <div class="hist__score" style="background:${bg};color:${color};">${h.score}</div>
+      <div class="hist__info">
+        <div class="hist__label">#${h.id} · ${h.grade}</div>
+        <div class="hist__meta">${h.date}</div>
+      </div>
+      ${deltaHtml}
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   Settings weight sync
+   ============================================================ */
+function syncWeights() {
+  const vals = ['cs','ka','tg','av'].map(k => parseInt(document.getElementById('w-' + k).value));
+  ['cs','ka','tg','av'].forEach((k, i) => {
+    document.getElementById('wv-' + k).textContent = vals[i] + '%';
+  });
+  const total = vals.reduce((a, b) => a + b, 0);
+  const totalEl = document.getElementById('w-total');
+  totalEl.textContent = total + '%';
+  totalEl.className = 'settings-total__value' + (total === 100 ? '' : ' settings-total__value--error');
+}
+
+function saveSettings() {
+  const vals = ['cs','ka','tg','av'].map(k => parseInt(document.getElementById('w-' + k).value));
+  const total = vals.reduce((a, b) => a + b, 0);
+  if (total !== 100) {
+    alert('权重总和必须为 100%，当前为 ' + total + '%');
+    return;
+  }
+  alert('设置已保存！\n\n内容结构: ' + vals[0] + '%\n知识对齐: ' + vals[1] + '%\n技术 GEO: ' + vals[2] + '%\nAI 可见度: ' + vals[3] + '%');
+}
+</script>
+
+</body>
+</html>

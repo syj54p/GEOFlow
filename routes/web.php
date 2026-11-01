@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\ArticleEditorAssistantController;
 use App\Http\Controllers\Admin\ArticlePermalinkController;
 use App\Http\Controllers\Admin\AuthorController;
 use App\Http\Controllers\Admin\ContentFactoryController;
+use App\Http\Controllers\Admin\GeoInflowController;
 use App\Http\Controllers\Admin\BrowserClientController;
 use App\Http\Controllers\Admin\BrowserConnectionApprovalController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -459,6 +460,28 @@ Route::prefix($adminPrefix)->name('admin.')->middleware(['admin.locale'])->group
                 ->middleware('throttle:admin-sensitive')
                 ->name('article.generate-schema')
                 ->whereNumber('articleId');
+        });
+
+        Route::prefix('geo-inflow')->name('geo-inflow.')->group(function () {
+            Route::get('/', [GeoInflowController::class, 'index'])->name('index');
+            Route::get('dashboard', [GeoInflowController::class, 'dashboard'])
+                ->middleware('throttle:120,1')
+                ->name('dashboard');
+            Route::get('article/{articleId}/evaluate', [GeoInflowController::class, 'evaluateArticle'])
+                ->middleware('throttle:120,1')
+                ->name('article.evaluate')
+                ->whereNumber('articleId');
+            Route::get('task/{taskId}/evaluate', [GeoInflowController::class, 'evaluateTask'])
+                ->middleware('throttle:120,1')
+                ->name('task.evaluate')
+                ->whereNumber('taskId');
+            Route::post('article/{articleId}/action', [GeoInflowController::class, 'executeAction'])
+                ->middleware('throttle:admin-sensitive')
+                ->name('article.action')
+                ->whereNumber('articleId');
+            Route::get('actions', [GeoInflowController::class, 'actionHistory'])
+                ->middleware('throttle:120,1')
+                ->name('actions');
         });
 
         Route::prefix('manual-publications')->name('manual-publications.')->group(function () {

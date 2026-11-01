@@ -23,6 +23,7 @@ loadPageModule('[data-prompt-test]', () => import('./admin/ai-prompt-test'));
 loadPageModule('[data-url-change-report], [data-url-category-guard], [data-url-separate-editor]', () => import('./admin/url-change'));
 loadPageModule('[data-copy-target]', () => import('./admin/manual-publications'));
 loadPageModule('[data-analytics-log-chart], [data-analytics-trend], [data-analytics-filter-form]', () => import('./admin/analytics'));
+loadPageModule('[data-geo-inflow]', () => import('./admin/geo-inflow'));
 loadPageModule('[data-system-updater-auto-reload], [data-system-updater-copy], [data-system-updater-error-dialog], [data-system-updater-authorized-action]', () => import('./admin/system-updates'));
 loadPageModule('[data-ai-workspace]', () => import('./admin/ai-workspace'));
 loadPageModule('[data-ai-model-create-form]', () => import('./admin/ai-model-create'));
