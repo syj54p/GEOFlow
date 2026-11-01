@@ -108,6 +108,9 @@ return [
         'activity_logs' => '操作日志',
         'api_tokens' => 'API Tokens',
         'link_pool' => '内链投放',
+        'geo_diagnosis' => '诊断概览',
+        'geo_inflow' => 'GEO 闭环',
+        'group_geo' => 'GEO 诊断',
     ],
     'ui_v3' => [
         'skip_to_content' => '跳到主要内容',

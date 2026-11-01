@@ -30,6 +30,10 @@ use App\Http\Controllers\Admin\ArticlePermalinkController;
 use App\Http\Controllers\Admin\AuthorController;
 use App\Http\Controllers\Admin\ContentFactoryController;
 use App\Http\Controllers\Admin\GeoInflowController;
+use App\Http\Controllers\Admin\GeoDiagnosisDashboardController;
+use App\Http\Controllers\Admin\BrandMonitorController;
+use App\Http\Controllers\Admin\ArticleDiagnosisController;
+use App\Http\Controllers\Admin\GeoDiagnosisSettingsController;
 use App\Http\Controllers\Admin\BrowserClientController;
 use App\Http\Controllers\Admin\BrowserConnectionApprovalController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -482,6 +486,84 @@ Route::prefix($adminPrefix)->name('admin.')->middleware(['admin.locale'])->group
             Route::get('actions', [GeoInflowController::class, 'actionHistory'])
                 ->middleware('throttle:120,1')
                 ->name('actions');
+        });
+
+        // ── GEO 诊断 ──
+        Route::prefix('geo-diagnosis')->name('geo-diagnosis.')->group(function (): void {
+            // 诊断概览仪表盘
+            Route::get('/', [GeoDiagnosisDashboardController::class, 'index'])->name('index');
+            Route::get('dashboard', [GeoDiagnosisDashboardController::class, 'dashboard'])
+                ->middleware('throttle:120,1')
+                ->name('dashboard');
+
+            // 诊断设置
+            Route::get('settings', [GeoDiagnosisSettingsController::class, 'index'])->name('settings.index');
+            Route::get('settings/api', [GeoDiagnosisSettingsController::class, 'show'])
+                ->middleware('throttle:120,1')
+                ->name('settings.show');
+            Route::put('settings', [GeoDiagnosisSettingsController::class, 'update'])
+                ->middleware('throttle:admin-sensitive')
+                ->name('settings.update');
+        });
+
+        // ── 品牌监测 ──
+        Route::prefix('brand-monitor')->name('brand-monitor.')->group(function (): void {
+            Route::get('/', [BrandMonitorController::class, 'index'])->name('index');
+
+            // AI 可见性
+            Route::get('visibility', [BrandMonitorController::class, 'visibility'])
+                ->middleware('throttle:120,1')
+                ->name('visibility');
+            Route::post('visibility/refresh', [BrandMonitorController::class, 'refreshVisibility'])
+                ->middleware('throttle:admin-sensitive')
+                ->name('visibility.refresh');
+
+            // 信源检测
+            Route::get('sources', [BrandMonitorController::class, 'sources'])
+                ->middleware('throttle:120,1')
+                ->name('sources');
+
+            // 舆情评价
+            Route::get('sentiment', [BrandMonitorController::class, 'sentiment'])
+                ->middleware('throttle:120,1')
+                ->name('sentiment');
+
+            // 关键词管理
+            Route::get('keywords', [BrandMonitorController::class, 'keywords'])
+                ->middleware('throttle:120,1')
+                ->name('keywords.index');
+            Route::post('keywords', [BrandMonitorController::class, 'addKeyword'])
+                ->middleware('throttle:admin-sensitive')
+                ->name('keywords.store');
+            Route::delete('keywords/{id}', [BrandMonitorController::class, 'removeKeyword'])
+                ->middleware('throttle:admin-sensitive')
+                ->name('keywords.destroy')
+                ->whereNumber('id');
+
+            // 平台管理
+            Route::get('platforms', [BrandMonitorController::class, 'platforms'])
+                ->middleware('throttle:120,1')
+                ->name('platforms.index');
+            Route::put('platforms/{id}', [BrandMonitorController::class, 'updatePlatform'])
+                ->middleware('throttle:admin-sensitive')
+                ->name('platforms.update')
+                ->whereNumber('id');
+        });
+
+        // ── 文章诊断 ──
+        Route::prefix('articles/{articleId}/geo-diagnosis')->name('article-diagnosis.')->group(function (): void {
+            Route::post('run', [ArticleDiagnosisController::class, 'run'])
+                ->middleware('throttle:admin-sensitive')
+                ->name('run')
+                ->whereNumber('articleId');
+            Route::get('latest', [ArticleDiagnosisController::class, 'latest'])
+                ->middleware('throttle:120,1')
+                ->name('latest')
+                ->whereNumber('articleId');
+            Route::get('history', [ArticleDiagnosisController::class, 'history'])
+                ->middleware('throttle:120,1')
+                ->name('history')
+                ->whereNumber('articleId');
         });
 
         Route::prefix('manual-publications')->name('manual-publications.')->group(function () {

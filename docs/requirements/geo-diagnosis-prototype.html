@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GEO 诊断 — GEOFlow Admin UI V3 原型</title>
+<title>GEO 诊断 — GEOFlow Admin UI V3 原型 v2.0（差异化版）</title>
 <style>
 /* ============================================================
    GEOFlow Admin UI V3 — Design Tokens (from app.css :root)
@@ -285,7 +285,7 @@ body{
 .gf-badge--violet{background:var(--gf-violet-50);color:var(--gf-violet-700);border-color:var(--gf-violet-100);}
 .gf-badge--blue{background:var(--gf-blue-50);color:var(--gf-blue-600);border-color:var(--gf-blue-100);}
 
-/* Status badges (non-pill, for article status) */
+/* Status badges */
 .gf-status{
   display:inline-flex;align-items:center;
   padding:2px 10px;border-radius:9999px;
@@ -333,6 +333,161 @@ body{
    ============================================================ */
 .page{display:none;}
 .page.active{display:block;}
+
+/* ============================================================
+   Dashboard page — metric cards
+   ============================================================ */
+.metric-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  margin-bottom:24px;
+}
+.metric-card{
+  background:#fff;border:1px solid var(--gf-gray-200);
+  border-radius:var(--gf-radius-control);box-shadow:var(--gf-shadow-surface);
+  padding:20px;
+}
+.metric-card__label{font-size:13px;font-weight:600;color:var(--gf-gray-500);margin-bottom:6px;}
+.metric-card__value{font-size:28px;font-weight:700;color:var(--gf-gray-900);line-height:1.2;}
+.metric-card__delta{font-size:12px;font-weight:600;margin-top:4px;}
+.metric-card__delta--up{color:var(--gf-emerald-600);}
+.metric-card__delta--down{color:var(--gf-red-600);}
+.metric-card__delta--flat{color:var(--gf-gray-400);}
+
+/* Dashboard two-column */
+.dash-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;
+}
+
+/* Recent activity list */
+.activity-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--gf-gray-100);
+}
+.activity-item:last-child{border-bottom:none;}
+.activity-icon{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.activity-icon--diag{background:var(--gf-blue-50);color:var(--gf-blue-600);}
+.activity-icon--brand{background:var(--gf-violet-50);color:var(--gf-violet-600);}
+.activity-icon--alert{background:var(--gf-amber-50);color:var(--gf-amber-600);}
+.activity-icon svg{width:16px;height:16px;}
+.activity-body{flex:1;min-width:0;}
+.activity-title{font-size:13px;font-weight:600;color:var(--gf-gray-800);}
+.activity-meta{font-size:12px;color:var(--gf-gray-500);}
+
+/* ============================================================
+   Brand monitoring page
+   ============================================================ */
+.brand-tabs{
+  display:flex;gap:0;
+  border-bottom:1px solid var(--gf-gray-200);
+  margin-bottom:20px;
+}
+.brand-tab{
+  padding:10px 20px;font-size:14px;font-weight:600;
+  color:var(--gf-gray-500);cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:color .12s,border-color .12s;
+  display:flex;align-items:center;gap:6px;
+}
+.brand-tab:hover{color:var(--gf-gray-700);}
+.brand-tab[aria-selected="true"]{color:var(--gf-blue-600);border-bottom-color:var(--gf-blue-600);}
+.brand-tab svg{width:16px;height:16px;}
+
+.brand-panel{display:none;}
+.brand-panel[aria-hidden="false"]{display:block;}
+
+/* Platform cards */
+.platform-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  margin-bottom:20px;
+}
+.platform-card{
+  background:#fff;border:1px solid var(--gf-gray-200);
+  border-radius:var(--gf-radius-control);
+  padding:16px;cursor:pointer;
+  transition:border-color .12s,box-shadow .12s;
+  display:flex;align-items:center;gap:12px;
+}
+.platform-card:hover{border-color:var(--gf-blue-200);box-shadow:var(--gf-shadow-surface);}
+.platform-card.selected{border-color:var(--gf-blue-500);background:var(--gf-blue-50);}
+.platform-card__icon{
+  width:40px;height:40px;border-radius:var(--gf-radius-control);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;flex-shrink:0;
+}
+.platform-card__name{font-size:14px;font-weight:600;color:var(--gf-gray-800);}
+.platform-card__status{font-size:12px;color:var(--gf-gray-500);}
+
+/* Keyword tags */
+.keyword-list{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin-bottom:16px;
+}
+.keyword-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:9999px;
+  font-size:13px;font-weight:500;
+  background:var(--gf-gray-100);color:var(--gf-gray-700);
+  border:1px solid var(--gf-gray-200);
+}
+.keyword-tag__remove{
+  width:16px;height:16px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--gf-gray-400);
+  transition:background .12s,color .12s;
+}
+.keyword-tag__remove:hover{background:var(--gf-red-50);color:var(--gf-red-600);}
+.keyword-tag__remove svg{width:12px;height:12px;}
+
+.keyword-add{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 12px;border-radius:9999px;
+  font-size:13px;font-weight:500;
+  background:#fff;color:var(--gf-blue-600);
+  border:1px dashed var(--gf-blue-300);
+  cursor:pointer;
+  transition:background .12s;
+}
+.keyword-add:hover{background:var(--gf-blue-50);}
+.keyword-add svg{width:14px;height:14px;}
+
+/* Visibility result cards */
+.vis-result{
+  background:#fff;border:1px solid var(--gf-gray-200);
+  border-radius:var(--gf-radius-control);box-shadow:var(--gf-shadow-surface);
+  overflow:hidden;margin-bottom:16px;
+}
+.vis-result__head{
+  padding:16px 20px;border-bottom:1px solid var(--gf-gray-100);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.vis-result__title{font-size:14px;font-weight:650;color:var(--gf-gray-900);}
+.vis-result__body{padding:16px 20px;}
+
+.vis-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--gf-gray-100);
+}
+.vis-row:last-child{border-bottom:none;}
+.vis-row__rank{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;flex-shrink:0;
+}
+.vis-row__rank--top{background:var(--gf-emerald-50);color:var(--gf-emerald-600);}
+.vis-row__rank--mid{background:var(--gf-amber-50);color:var(--gf-amber-600);}
+.vis-row__rank--low{background:var(--gf-red-50);color:var(--gf-red-600);}
+.vis-row__info{flex:1;min-width:0;}
+.vis-row__query{font-size:13px;font-weight:600;color:var(--gf-gray-800);}
+.vis-row__meta{font-size:12px;color:var(--gf-gray-500);}
+.vis-row__score{
+  font-size:14px;font-weight:700;
+  padding:4px 12px;border-radius:var(--gf-radius-nav);
+}
 
 /* ============================================================
    Article detail — two column layout
@@ -531,7 +686,7 @@ body{
   font-size:14px;font-weight:700;color:var(--gf-blue-600);
 }
 
-/* Range slider styling */
+/* Range slider */
 input[type="range"]{
   -webkit-appearance:none;width:100%;height:6px;
   background:var(--gf-gray-200);border-radius:3px;outline:none;
@@ -574,7 +729,7 @@ input[type="range"]::-webkit-slider-thumb{
 }
 
 /* ============================================================
-   Progress overlay (diagnosis running)
+   Progress overlay
    ============================================================ */
 .gf-overlay{
   display:none;position:fixed;inset:0;
@@ -640,6 +795,9 @@ input[type="range"]::-webkit-slider-thumb{
 @media(max-width:1180px){
   .gf-topbar,.gf-content,.gf-footer{padding-left:24px;padding-right:24px;}
   .detail-grid{grid-template-columns:1fr;}
+  .metric-grid{grid-template-columns:repeat(2,1fr);}
+  .dash-grid{grid-template-columns:1fr;}
+  .platform-grid{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:767px){
   .gf-sidebar{transform:translateX(-100%);transition:transform .2s;}
@@ -647,6 +805,8 @@ input[type="range"]::-webkit-slider-thumb{
   .gf-shell__body{margin-left:0;}
   .gf-topbar,.gf-content,.gf-footer{padding-left:16px;padding-right:16px;}
   .check-grid{grid-template-columns:1fr;}
+  .metric-grid{grid-template-columns:1fr;}
+  .platform-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -689,13 +849,32 @@ input[type="range"]::-webkit-slider-thumb{
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
             任务
           </a>
-          <a class="gf-sidebar__link" data-nav="articles" aria-current="page" onclick="showPage('articles')">
+          <a class="gf-sidebar__link" data-nav="articles" onclick="showPage('articles')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
             文章
           </a>
           <a class="gf-sidebar__link" data-nav="materials">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>
             素材
+          </a>
+        </div>
+      </div>
+
+      <!-- GEO 诊断 (NEW) -->
+      <div class="gf-sidebar__group">
+        <div class="gf-sidebar__heading">GEO 诊断</div>
+        <div class="gf-sidebar__items">
+          <a class="gf-sidebar__link" data-nav="geo-dashboard" aria-current="page" onclick="showPage('geo-dashboard')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            诊断概览
+          </a>
+          <a class="gf-sidebar__link" data-nav="brand-monitor" onclick="showPage('brand-monitor')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            品牌监测
+          </a>
+          <a class="gf-sidebar__link" data-nav="geo-settings" onclick="showPage('geo-settings')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            诊断设置
           </a>
         </div>
       </div>
@@ -746,8 +925,8 @@ input[type="range"]::-webkit-slider-thumb{
     <!-- Topbar -->
     <header class="gf-topbar">
       <div class="gf-topbar__identity">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
-        <span class="gf-topbar__title" id="topbar-title">文章</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <span class="gf-topbar__title" id="topbar-title">诊断概览</span>
       </div>
       <div class="gf-topbar__actions">
         <button class="gf-icon-btn" title="通知">
@@ -766,15 +945,448 @@ input[type="range"]::-webkit-slider-thumb{
     <main class="gf-main">
       <div class="gf-content">
 
-        <!-- ========== PAGE: Articles List ========== -->
-        <div id="page-articles" class="page active">
+        <!-- ========== PAGE 1: GEO 诊断概览 ========== -->
+        <div id="page-geo-dashboard" class="page active">
+          <div class="gf-page-header">
+            <div class="gf-eyebrow">GEO 诊断</div>
+            <h1>诊断概览</h1>
+            <p>全局视角：内部内容 GEO 质量 + 外部品牌 AI 可见度，一站式掌握优化进度。</p>
+          </div>
+
+          <!-- 4 metric cards -->
+          <div class="metric-grid">
+            <div class="metric-card">
+              <div class="metric-card__label">文章平均 GEO 分</div>
+              <div class="metric-card__value">72</div>
+              <div class="metric-card__delta metric-card__delta--up">↑ 7 分（近 30 天）</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-card__label">品牌 AI 可见度</div>
+              <div class="metric-card__value">38%</div>
+              <div class="metric-card__delta metric-card__delta--up">↑ 5%（近 7 天）</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-card__label">待优化文章</div>
+              <div class="metric-card__value">6</div>
+              <div class="metric-card__delta metric-card__delta--down">2 篇评分 &lt; 60</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-card__label">监控关键词</div>
+              <div class="metric-card__value">8</div>
+              <div class="metric-card__delta metric-card__delta--flat">覆盖 3 个 AI 平台</div>
+            </div>
+          </div>
+
+          <!-- Two-column: recent activity + brand snapshot -->
+          <div class="dash-grid">
+            <!-- Recent diagnosis activity -->
+            <div class="gf-card">
+              <div class="gf-card__header">
+                <span class="gf-card__title">最近诊断活动</span>
+                <a onclick="showPage('articles')" style="font-size:13px;color:var(--gf-blue-600);cursor:pointer;font-weight:600;">查看全部 →</a>
+              </div>
+              <div class="gf-card__body">
+                <div class="activity-item">
+                  <div class="activity-icon activity-icon--diag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  </div>
+                  <div class="activity-body">
+                    <div class="activity-title">「2026 年企业 GEO 运营完全指南」诊断完成</div>
+                    <div class="activity-meta">72 分 · 良好 · 10 分钟前</div>
+                  </div>
+                  <span class="gf-score gf-score--good">72</span>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-icon activity-icon--diag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  </div>
+                  <div class="activity-body">
+                    <div class="activity-title">「AI 搜索时代的内容策略」诊断完成</div>
+                    <div class="activity-meta">85 分 · 优秀 · 2 小时前</div>
+                  </div>
+                  <span class="gf-score gf-score--excellent">85</span>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-icon activity-icon--brand">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  </div>
+                  <div class="activity-body">
+                    <div class="activity-title">品牌监测：豆包「GEO 运营」查询完成</div>
+                    <div class="activity-meta">排名第 8 · 较昨日 ↑ 2 · 3 小时前</div>
+                  </div>
+                  <span class="gf-badge gf-badge--emerald">前 10</span>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-icon activity-icon--alert">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                  </div>
+                  <div class="activity-body">
+                    <div class="activity-title">预警：竞品「XX 公司」AI 引用占比升至 62%</div>
+                    <div class="activity-meta">超过 50% 警戒线 · 5 小时前</div>
+                  </div>
+                  <span class="gf-badge gf-badge--red">预警</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Brand visibility snapshot -->
+            <div class="gf-card">
+              <div class="gf-card__header">
+                <span class="gf-card__title">品牌 AI 可见度快照</span>
+                <a onclick="showPage('brand-monitor')" style="font-size:13px;color:var(--gf-blue-600);cursor:pointer;font-weight:600;">详情 →</a>
+              </div>
+              <div class="gf-card__body">
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                    <span style="font-size:13px;font-weight:600;color:var(--gf-gray-700);">豆包</span>
+                    <span style="font-size:13px;font-weight:700;color:var(--gf-emerald-600);">42% 可见</span>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                    <span style="font-size:13px;font-weight:600;color:var(--gf-gray-700);">Kimi</span>
+                    <span style="font-size:13px;font-weight:700;color:var(--gf-amber-600);">28% 可见</span>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                    <span style="font-size:13px;font-weight:600;color:var(--gf-gray-700);">通义千问</span>
+                    <span style="font-size:13px;font-weight:700;color:var(--gf-amber-600);">35% 可见</span>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                    <span style="font-size:13px;font-weight:600;color:var(--gf-gray-700);">文心一言</span>
+                    <span style="font-size:13px;font-weight:700;color:var(--gf-red-600);">18% 可见</span>
+                  </div>
+                </div>
+                <div style="margin-top:16px;padding:12px 14px;background:var(--gf-blue-50);border-radius:var(--gf-radius-nav);border:1px solid var(--gf-blue-100);">
+                  <div style="font-size:12px;font-weight:600;color:var(--gf-blue-700);margin-bottom:2px;">综合可见度：38%</div>
+                  <div style="font-size:12px;color:var(--gf-blue-600);">在 8 个监控关键词中，3 个进入 AI 搜索前 10</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== PAGE 2: 品牌监测 ========== -->
+        <div id="page-brand-monitor" class="page">
+          <div class="gf-page-header">
+            <div class="gf-eyebrow">GEO 诊断</div>
+            <h1>品牌监测</h1>
+            <p>监控品牌在主流 AI 平台的可见度、信源引用和舆情评价，及时发现竞品动态。</p>
+          </div>
+
+          <!-- Brand tabs -->
+          <div class="brand-tabs">
+            <div class="brand-tab" aria-selected="true" onclick="switchBrandTab(0)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              AI 可见性
+            </div>
+            <div class="brand-tab" aria-selected="false" onclick="switchBrandTab(1)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+              信源检测
+            </div>
+            <div class="brand-tab" aria-selected="false" onclick="switchBrandTab(2)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              舆情评价
+            </div>
+          </div>
+
+          <!-- Tab panel 0: AI 可见性 -->
+          <div class="brand-panel" aria-hidden="false" id="brand-panel-0">
+            <!-- Platform selector -->
+            <div class="gf-card">
+              <div class="gf-card__header">
+                <span class="gf-card__title">监控平台</span>
+                <span style="font-size:12px;color:var(--gf-gray-400);">已选 3 个平台</span>
+              </div>
+              <div class="gf-card__body">
+                <div class="platform-grid">
+                  <div class="platform-card selected">
+                    <div class="platform-card__icon" style="background:var(--gf-blue-50);color:var(--gf-blue-600);">豆</div>
+                    <div>
+                      <div class="platform-card__name">豆包</div>
+                      <div class="platform-card__status">已绑定 · 每小时检测</div>
+                    </div>
+                  </div>
+                  <div class="platform-card selected">
+                    <div class="platform-card__icon" style="background:var(--gf-violet-50);color:var(--gf-violet-600);">K</div>
+                    <div>
+                      <div class="platform-card__name">Kimi</div>
+                      <div class="platform-card__status">已绑定 · 每小时检测</div>
+                    </div>
+                  </div>
+                  <div class="platform-card selected">
+                    <div class="platform-card__icon" style="background:var(--gf-emerald-50);color:var(--gf-emerald-600);">通</div>
+                    <div>
+                      <div class="platform-card__name">通义千问</div>
+                      <div class="platform-card__status">已绑定 · 每 2 小时检测</div>
+                    </div>
+                  </div>
+                  <div class="platform-card">
+                    <div class="platform-card__icon" style="background:var(--gf-red-50);color:var(--gf-red-600);">文</div>
+                    <div>
+                      <div class="platform-card__name">文心一言</div>
+                      <div class="platform-card__status">未绑定</div>
+                    </div>
+                  </div>
+                  <div class="platform-card">
+                    <div class="platform-card__icon" style="background:var(--gf-amber-50);color:var(--gf-amber-600);">G</div>
+                    <div>
+                      <div class="platform-card__name">Google AI Overview</div>
+                      <div class="platform-card__status">未绑定</div>
+                    </div>
+                  </div>
+                  <div class="platform-card">
+                    <div class="platform-card__icon" style="background:var(--gf-sky-50);color:var(--gf-sky-600);">Chat</div>
+                    <div>
+                      <div class="platform-card__name">ChatGPT</div>
+                      <div class="platform-card__status">未绑定</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Keywords -->
+            <div class="gf-card">
+              <div class="gf-card__header">
+                <span class="gf-card__title">监控关键词</span>
+                <button class="gf-btn gf-btn--sm" id="btn-add-keyword">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                  添加关键词
+                </button>
+              </div>
+              <div class="gf-card__body">
+                <div class="keyword-list" id="keyword-list">
+                  <span class="keyword-tag">GEO 运营 <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+                  <span class="keyword-tag">生成式引擎优化 <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+                  <span class="keyword-tag">AI 搜索优化 <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+                  <span class="keyword-tag">内容营销自动化 <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+                  <span class="keyword-tag">知识库建设 <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+                  <span class="keyword-tag">Schema.org <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+                  <span class="keyword-tag">AI 引用率 <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+                  <span class="keyword-tag">GEOFlow <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visibility results -->
+            <div class="gf-card">
+              <div class="gf-card__header">
+                <span class="gf-card__title">AI 可见性检测结果</span>
+                <span class="gf-badge gf-badge--gray">最近检测：10 分钟前</span>
+              </div>
+              <div class="gf-card__body gf-card__body--flush" style="overflow-x:auto;">
+                <table class="gf-table">
+                  <colgroup>
+                    <col style="width:25%">
+                    <col style="width:12%">
+                    <col style="width:12%">
+                    <col style="width:12%">
+                    <col style="width:15%">
+                    <col style="width:12%">
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>关键词</th>
+                      <th>豆包</th>
+                      <th>Kimi</th>
+                      <th>通义千问</th>
+                      <th>综合排名</th>
+                      <th>趋势</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="td-title">GEO 运营</td>
+                      <td><span class="gf-badge gf-badge--emerald">第 8</span></td>
+                      <td><span class="gf-badge gf-badge--amber">第 15</span></td>
+                      <td><span class="gf-badge gf-badge--emerald">第 6</span></td>
+                      <td style="font-weight:600;color:var(--gf-gray-800);">第 9.7</td>
+                      <td style="color:var(--gf-emerald-600);font-weight:600;">↑ 2</td>
+                    </tr>
+                    <tr>
+                      <td class="td-title">生成式引擎优化</td>
+                      <td><span class="gf-badge gf-badge--emerald">第 5</span></td>
+                      <td><span class="gf-badge gf-badge--emerald">第 7</span></td>
+                      <td><span class="gf-badge gf-badge--emerald">第 4</span></td>
+                      <td style="font-weight:600;color:var(--gf-gray-800);">第 5.3</td>
+                      <td style="color:var(--gf-emerald-600);font-weight:600;">↑ 1</td>
+                    </tr>
+                    <tr>
+                      <td class="td-title">AI 搜索优化</td>
+                      <td><span class="gf-badge gf-badge--amber">第 18</span></td>
+                      <td><span class="gf-badge gf-badge--red">第 25</span></td>
+                      <td><span class="gf-badge gf-badge--amber">第 14</span></td>
+                      <td style="font-weight:600;color:var(--gf-gray-800);">第 19</td>
+                      <td style="color:var(--gf-red-600);font-weight:600;">↓ 3</td>
+                    </tr>
+                    <tr>
+                      <td class="td-title">内容营销自动化</td>
+                      <td><span class="gf-badge gf-badge--emerald">第 3</span></td>
+                      <td><span class="gf-badge gf-badge--emerald">第 9</span></td>
+                      <td><span class="gf-badge gf-badge--emerald">第 7</span></td>
+                      <td style="font-weight:600;color:var(--gf-gray-800);">第 6.3</td>
+                      <td style="color:var(--gf-emerald-600);font-weight:600;">↑ 5</td>
+                    </tr>
+                    <tr>
+                      <td class="td-title">知识库建设</td>
+                      <td><span class="gf-badge gf-badge--amber">第 12</span></td>
+                      <td><span class="gf-badge gf-badge--amber">第 20</span></td>
+                      <td><span class="gf-badge gf-badge--amber">第 11</span></td>
+                      <td style="font-weight:600;color:var(--gf-gray-800);">第 14.3</td>
+                      <td style="color:var(--gf-gray-400);font-weight:600;">— 0</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab panel 1: 信源检测 -->
+          <div class="brand-panel" aria-hidden="true" id="brand-panel-1">
+            <div class="gf-card">
+              <div class="gf-card__header">
+                <span class="gf-card__title">AI 引用信源分析</span>
+                <span class="gf-badge gf-badge--gray">最近检测：1 小时前</span>
+              </div>
+              <div class="gf-card__body">
+                <div style="margin-bottom:20px;">
+                  <div style="font-size:13px;font-weight:600;color:var(--gf-gray-700);margin-bottom:8px;">品牌引用占比</div>
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="flex:1;height:24px;background:var(--gf-gray-200);border-radius:12px;overflow:hidden;display:flex;">
+                      <div style="width:35%;background:var(--gf-blue-600);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;">本站 35%</div>
+                      <div style="width:62%;background:var(--gf-red-100);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--gf-red-700);">竞品 62%</div>
+                      <div style="width:3%;background:var(--gf-gray-100);"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:16px;margin-top:8px;">
+                    <span style="font-size:12px;color:var(--gf-gray-500);display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--gf-blue-600);display:inline-block;"></span>本站引用</span>
+                    <span style="font-size:12px;color:var(--gf-gray-500);display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--gf-red-400);display:inline-block;"></span>竞品引用</span>
+                    <span style="font-size:12px;color:var(--gf-gray-500);display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--gf-gray-300);display:inline-block;"></span>其他来源</span>
+                  </div>
+                </div>
+
+                <div style="margin-bottom:20px;">
+                  <div style="font-size:13px;font-weight:600;color:var(--gf-gray-700);margin-bottom:10px;">高频引用内容 TOP 5</div>
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                      <span style="font-size:12px;font-weight:700;color:var(--gf-blue-600);width:20px;">1</span>
+                      <span style="flex:1;font-size:13px;color:var(--gf-gray-800);">「什么是 GEO？生成式引擎优化完全指南」</span>
+                      <span style="font-size:12px;font-weight:600;color:var(--gf-gray-600);">被引用 28 次</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                      <span style="font-size:12px;font-weight:700;color:var(--gf-blue-600);width:20px;">2</span>
+                      <span style="flex:1;font-size:13px;color:var(--gf-gray-800);">「2026 年企业 GEO 运营框架」</span>
+                      <span style="font-size:12px;font-weight:600;color:var(--gf-gray-600);">被引用 19 次</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                      <span style="font-size:12px;font-weight:700;color:var(--gf-blue-600);width:20px;">3</span>
+                      <span style="flex:1;font-size:13px;color:var(--gf-gray-800);">「Schema.org 标记入门教程」</span>
+                      <span style="font-size:12px;font-weight:600;color:var(--gf-gray-600);">被引用 14 次</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                      <span style="font-size:12px;font-weight:700;color:var(--gf-gray-400);width:20px;">4</span>
+                      <span style="flex:1;font-size:13px;color:var(--gf-gray-600);">「AI 搜索时代的内容策略」</span>
+                      <span style="font-size:12px;font-weight:600;color:var(--gf-gray-500);">被引用 9 次</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--gf-gray-50);border-radius:var(--gf-radius-nav);">
+                      <span style="font-size:12px;font-weight:700;color:var(--gf-gray-400);width:20px;">5</span>
+                      <span style="flex:1;font-size:13px;color:var(--gf-gray-600);">「知识库建设最佳实践」</span>
+                      <span style="font-size:12px;font-weight:600;color:var(--gf-gray-500);">被引用 6 次</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--gf-gray-700);margin-bottom:10px;">竞品信源追踪</div>
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--gf-red-100);border-radius:var(--gf-radius-nav);background:var(--gf-red-50);">
+                      <span style="font-size:13px;font-weight:600;color:var(--gf-gray-800);flex:1;">竞品 A — XX 公司</span>
+                      <span class="gf-badge gf-badge--red">引用占比 62%</span>
+                      <span style="font-size:12px;color:var(--gf-red-600);font-weight:600;">↑ 8%（7 天）</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--gf-gray-200);border-radius:var(--gf-radius-nav);">
+                      <span style="font-size:13px;font-weight:600;color:var(--gf-gray-800);flex:1;">竞品 B — YY 科技</span>
+                      <span class="gf-badge gf-badge--amber">引用占比 21%</span>
+                      <span style="font-size:12px;color:var(--gf-gray-500);font-weight:600;">↓ 2%（7 天）</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--gf-gray-200);border-radius:var(--gf-radius-nav);">
+                      <span style="font-size:13px;font-weight:600;color:var(--gf-gray-800);flex:1;">竞品 C — ZZ 传媒</span>
+                      <span class="gf-badge gf-badge--gray">引用占比 8%</span>
+                      <span style="font-size:12px;color:var(--gf-emerald-600);font-weight:600;">↓ 5%（7 天）</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab panel 2: 舆情评价 -->
+          <div class="brand-panel" aria-hidden="true" id="brand-panel-2">
+            <div class="gf-card">
+              <div class="gf-card__header">
+                <span class="gf-card__title">AI 舆情评价概览</span>
+                <span class="gf-badge gf-badge--gray">最近检测：2 小时前</span>
+              </div>
+              <div class="gf-card__body">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+                  <div style="padding:16px;background:var(--gf-emerald-50);border-radius:var(--gf-radius-control);border:1px solid var(--gf-emerald-200);">
+                    <div style="font-size:12px;font-weight:600;color:var(--gf-emerald-700);margin-bottom:4px;">正面评价</div>
+                    <div style="font-size:24px;font-weight:700;color:var(--gf-emerald-700);">67%</div>
+                    <div style="font-size:12px;color:var(--gf-emerald-600);margin-top:2px;">↑ 3%（近 7 天）</div>
+                  </div>
+                  <div style="padding:16px;background:var(--gf-amber-50);border-radius:var(--gf-radius-control);border:1px solid var(--gf-amber-100);">
+                    <div style="font-size:12px;font-weight:600;color:var(--gf-amber-700);margin-bottom:4px;">中性评价</div>
+                    <div style="font-size:24px;font-weight:700;color:var(--gf-amber-700);">24%</div>
+                    <div style="font-size:12px;color:var(--gf-amber-600);margin-top:2px;">↓ 1%（近 7 天）</div>
+                  </div>
+                  <div style="padding:16px;background:var(--gf-red-50);border-radius:var(--gf-radius-control);border:1px solid var(--gf-red-100);">
+                    <div style="font-size:12px;font-weight:600;color:var(--gf-red-700);margin-bottom:4px;">负面评价</div>
+                    <div style="font-size:24px;font-weight:700;color:var(--gf-red-700);">9%</div>
+                    <div style="font-size:12px;color:var(--gf-red-600);margin-top:2px;">↓ 2%（近 7 天）</div>
+                  </div>
+                </div>
+
+                <div style="font-size:13px;font-weight:600;color:var(--gf-gray-700);margin-bottom:10px;">近期 AI 平台评价摘要</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <div style="padding:14px;border:1px solid var(--gf-gray-200);border-radius:var(--gf-radius-control);">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <span class="gf-badge gf-badge--emerald">正面</span>
+                    <span style="font-size:12px;color:var(--gf-gray-500);">豆包 · 关于「GEOFlow 好用吗」</span>
+                    <span style="font-size:12px;color:var(--gf-gray-400);margin-left:auto;">2 小时前</span>
+                  </div>
+                  <div style="font-size:13px;color:var(--gf-gray-700);line-height:1.6;">"GEOFlow 是一款专业的 GEO 内容运营平台，支持从知识库建设到 AI 内容生产的全链路自动化，在结构化数据优化方面表现突出。"</div>
+                </div>
+                <div style="padding:14px;border:1px solid var(--gf-gray-200);border-radius:var(--gf-radius-control);">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <span class="gf-badge gf-badge--amber">中性</span>
+                    <span style="font-size:12px;color:var(--gf-gray-500);">Kimi · 关于「有哪些 GEO 工具」</span>
+                    <span style="font-size:12px;color:var(--gf-gray-400);margin-left:auto;">5 小时前</span>
+                  </div>
+                  <div style="font-size:13px;color:var(--gf-gray-700);line-height:1.6;">"市面上有多个 GEO 相关工具，包括 GEOFlow、adminingeo 等。GEOFlow 侧重内容生产链路，adminingeo 侧重品牌监测。"</div>
+                </div>
+                <div style="padding:14px;border:1px solid var(--gf-red-100);border-radius:var(--gf-radius-control);background:var(--gf-red-50);">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <span class="gf-badge gf-badge--red">负面</span>
+                    <span style="font-size:12px;color:var(--gf-gray-500);">通义千问 · 关于「GEOFlow 缺点」</span>
+                    <span style="font-size:12px;color:var(--gf-gray-400);margin-left:auto;">1 天前</span>
+                  </div>
+                  <div style="font-size:13px;color:var(--gf-gray-700);line-height:1.6;">"GEOFlow 目前不支持外部品牌监测功能，需要配合其他工具使用。"</div>
+                  <div style="margin-top:8px;padding:8px 10px;background:#fff;border-radius:var(--gf-radius-nav);font-size:12px;color:var(--gf-blue-700);border:1px solid var(--gf-blue-100);">
+                    💡 建议：v2 已新增品牌监测模块，可申请重新检测更新此评价
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div><!-- /page-brand-monitor -->
+
+        <!-- ========== PAGE 3: 文章列表 ========== -->
+        <div id="page-articles" class="page">
           <div class="gf-page-header">
             <div class="gf-eyebrow">内容管理</div>
             <h1>文章</h1>
-            <p>管理所有已发布、审核中和草稿状态的文章，查看 GEO 诊断评分和 AI 质检结果。</p>
+            <p>管理所有文章，查看每篇的 GEO 诊断评分和 AI 质检结果。点击文章可运行详细诊断。</p>
           </div>
 
-          <!-- Section subnav -->
           <nav class="gf-section-nav">
             <a class="gf-section-nav__link" aria-current="page">
               <span class="nav-dot" style="background:var(--gf-blue-600)"></span>
@@ -792,13 +1404,8 @@ input[type="range"]::-webkit-slider-thumb{
               <span class="nav-dot" style="background:var(--gf-gray-300)"></span>
               审核中心
             </a>
-            <a class="gf-section-nav__link">
-              <span class="nav-dot" style="background:var(--gf-gray-300)"></span>
-              回收站
-            </a>
           </nav>
 
-          <!-- Article table card -->
           <div class="gf-card">
             <div class="gf-card__header">
               <span class="gf-card__title">全部文章</span>
@@ -807,7 +1414,7 @@ input[type="range"]::-webkit-slider-thumb{
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                   筛选
                 </button>
-                <button class="gf-btn gf-btn--primary gf-btn--sm" onclick="showPage('article-detail')">
+                <button class="gf-btn gf-btn--primary gf-btn--sm">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                   新建文章
                 </button>
@@ -816,12 +1423,12 @@ input[type="range"]::-webkit-slider-thumb{
             <div class="gf-card__body gf-card__body--flush" style="overflow-x:auto;">
               <table class="gf-table">
                 <colgroup>
-                  <col style="width:40%">
+                  <col style="width:38%">
+                  <col style="width:10%">
+                  <col style="width:10%">
+                  <col style="width:10%">
+                  <col style="width:10%">
                   <col style="width:12%">
-                  <col style="width:10%">
-                  <col style="width:10%">
-                  <col style="width:10%">
-                  <col style="width:8%">
                 </colgroup>
                 <thead>
                   <tr>
@@ -888,7 +1495,7 @@ input[type="range"]::-webkit-slider-thumb{
           </div>
         </div>
 
-        <!-- ========== PAGE: Article Detail + Diagnosis ========== -->
+        <!-- ========== PAGE 4: 文章详情 + 诊断 ========== -->
         <div id="page-article-detail" class="page">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
             <a onclick="showPage('articles')" style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--gf-gray-500);cursor:pointer;text-decoration:none;">
@@ -899,7 +1506,6 @@ input[type="range"]::-webkit-slider-thumb{
             <span style="font-size:13px;color:var(--gf-gray-700);font-weight:500;">2026 年企业 GEO 运营完全指南</span>
           </div>
 
-          <!-- Article header -->
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;">
             <div>
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
@@ -923,9 +1529,7 @@ input[type="range"]::-webkit-slider-thumb{
             </div>
           </div>
 
-          <!-- Two-column layout -->
           <div class="detail-grid">
-
             <!-- Left: Article body -->
             <div class="gf-card">
               <div class="gf-card__header">
@@ -944,16 +1548,13 @@ input[type="range"]::-webkit-slider-thumb{
                   <h2>企业 GEO 运营框架</h2>
                   <p>企业开展 GEO 运营需要建立完整的内容生产链路：从可信知识库建设，到 AI 辅助内容生产，再到质量门禁和人工审核，最后通过多渠道分发触达目标用户。</p>
                   <h3>第一步：建设可信知识库</h3>
-                  <p>知识库是 GEO 运营的基础设施。企业需要将产品文档、行业报告、客户案例、FAQ 等资料结构化存储，并建立知识之间的关联关系。知识库的质量直接决定了 AI 生成内容的可信度。</p>
-                  <h3>第二步：AI 辅助内容生产</h3>
-                  <p>基于知识库，利用 AI 模型生成初稿。AI 可以快速产出符合 GEO 原则的内容框架，但最终需要人工审核确保准确性和品牌一致性。</p>
+                  <p>知识库是 GEO 运营的基础设施。企业需要将产品文档、行业报告、客户案例、FAQ 等资料结构化存储，并建立知识之间的关联关系。</p>
                 </div>
               </div>
             </div>
 
             <!-- Right: Diagnosis panel -->
             <div>
-              <!-- Score card (hidden before diagnosis) -->
               <div class="diag-score-card" id="diag-score" style="display:none;">
                 <div class="diag-score-card__header">
                   <span class="diag-score-card__title">
@@ -1003,10 +1604,8 @@ input[type="range"]::-webkit-slider-thumb{
                 </div>
               </div>
 
-              <!-- Diagnosis detail card (hidden before diagnosis) -->
               <div class="gf-card" id="diag-detail" style="display:none;">
                 <div class="gf-card__body" style="padding:0 20px 20px;">
-                  <!-- Tabs -->
                   <div class="diag-tabs" role="tablist">
                     <div class="diag-tab" role="tab" aria-selected="true" onclick="switchDiagTab(0)">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -1021,25 +1620,12 @@ input[type="range"]::-webkit-slider-thumb{
                       历史
                     </div>
                   </div>
-
-                  <!-- Tab panel: Findings -->
-                  <div class="diag-tab-panel" aria-hidden="false" id="diag-panel-0">
-                    <div id="findings-list"></div>
-                  </div>
-
-                  <!-- Tab panel: Recommendations -->
-                  <div class="diag-tab-panel" aria-hidden="true" id="diag-panel-1">
-                    <div id="recommendations-list"></div>
-                  </div>
-
-                  <!-- Tab panel: History -->
-                  <div class="diag-tab-panel" aria-hidden="true" id="diag-panel-2">
-                    <div id="history-list"></div>
-                  </div>
+                  <div class="diag-tab-panel" aria-hidden="false" id="diag-panel-0"><div id="findings-list"></div></div>
+                  <div class="diag-tab-panel" aria-hidden="true" id="diag-panel-1"><div id="recommendations-list"></div></div>
+                  <div class="diag-tab-panel" aria-hidden="true" id="diag-panel-2"><div id="history-list"></div></div>
                 </div>
               </div>
 
-              <!-- Empty state (shown before diagnosis) -->
               <div class="gf-card" id="diag-empty">
                 <div class="gf-card__body">
                   <div class="diag-empty">
@@ -1052,19 +1638,17 @@ input[type="range"]::-webkit-slider-thumb{
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
-        <!-- ========== PAGE: Diagnosis Settings ========== -->
-        <div id="page-diagnosis-settings" class="page">
+        <!-- ========== PAGE 5: 诊断设置 ========== -->
+        <div id="page-geo-settings" class="page">
           <div class="gf-page-header">
             <div class="gf-eyebrow">GEO 诊断</div>
             <h1>诊断设置</h1>
             <p>配置四维评分体系的权重分配和检查项开关。权重总和须为 100%。</p>
           </div>
 
-          <!-- Weight settings -->
           <div class="settings-panel">
             <div class="settings-panel__head">
               <h2>维度权重</h2>
@@ -1096,7 +1680,6 @@ input[type="range"]::-webkit-slider-thumb{
             </div>
           </div>
 
-          <!-- Check item toggles -->
           <div class="settings-panel">
             <div class="settings-panel__head">
               <h2>检查项开关</h2>
@@ -1136,7 +1719,7 @@ input[type="range"]::-webkit-slider-thumb{
         <a href="#">API</a>
         <span class="gf-footer__dot">·</span>
         <a href="#">CLI</a>
-        <span style="margin-left:auto;">GEO 诊断原型 v1.0</span>
+        <span style="margin-left:auto;">GEO 诊断原型 v2.0（差异化版）</span>
       </footer>
 
     </main>
@@ -1183,27 +1766,66 @@ input[type="range"]::-webkit-slider-thumb{
 
 <script>
 /* ============================================================
-   Navigation
+   Page navigation
    ============================================================ */
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('page-' + id);
   if (page) page.classList.add('active');
 
-  // Update topbar title
   const titles = {
+    'geo-dashboard': '诊断概览',
+    'brand-monitor': '品牌监测',
     'articles': '文章',
     'article-detail': '文章详情',
-    'diagnosis-settings': '诊断设置'
+    'geo-settings': '诊断设置'
   };
   document.getElementById('topbar-title').textContent = titles[id] || 'GEOFlow';
 
-  // Update sidebar active
+  // Update sidebar
   document.querySelectorAll('.gf-sidebar__link').forEach(a => a.removeAttribute('aria-current'));
-  if (id === 'articles' || id === 'article-detail') {
-    document.querySelector('.gf-sidebar__link[data-nav="articles"]').setAttribute('aria-current', 'page');
+  const navMap = {
+    'geo-dashboard': 'geo-dashboard',
+    'brand-monitor': 'brand-monitor',
+    'articles': 'articles',
+    'article-detail': 'articles',
+    'geo-settings': 'geo-settings'
+  };
+  const navKey = navMap[id];
+  if (navKey) {
+    const link = document.querySelector('.gf-sidebar__link[data-nav="' + navKey + '"]');
+    if (link) link.setAttribute('aria-current', 'page');
   }
 }
+
+/* ============================================================
+   Brand monitoring tabs
+   ============================================================ */
+function switchBrandTab(idx) {
+  document.querySelectorAll('.brand-tab').forEach((t, i) => {
+    t.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+  });
+  document.querySelectorAll('.brand-panel').forEach((p, i) => {
+    p.setAttribute('aria-hidden', i === idx ? 'false' : 'true');
+  });
+}
+
+/* ============================================================
+   Keyword management
+   ============================================================ */
+function removeKeyword(el) {
+  el.closest('.keyword-tag').remove();
+}
+
+document.getElementById('btn-add-keyword').addEventListener('click', function() {
+  const kw = prompt('输入新关键词：');
+  if (kw && kw.trim()) {
+    const tag = document.createElement('span');
+    tag.className = 'keyword-tag';
+    tag.innerHTML = kw.trim() + ' <span class="keyword-tag__remove" onclick="removeKeyword(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>';
+    document.getElementById('keyword-list').appendChild(tag);
+  }
+});
 
 /* ============================================================
    Diagnosis tabs
@@ -1231,25 +1853,25 @@ const MOCK = {
     av: { score: 16, max: 25, pct: 64 }
   },
   findings: [
-    { id:'CS-01', pass:true, sev:'high', dim:'内容结构', title:'H1 标题存在且唯一', desc:'文章包含唯一的 H1 标题「2026 年企业 GEO 运营完全指南」' },
-    { id:'CS-02', pass:true, sev:'medium', dim:'内容结构', title:'标题层级无跳跃', desc:'H1 → H2 → H3 层级结构完整，无跳级' },
-    { id:'CS-03', pass:false, sev:'low', dim:'内容结构', title:'段落平均长度 ≤ 200 字', desc:'当前平均段落长度 280 字，部分段落过长不利于 AI 提取' },
-    { id:'CS-04', pass:false, sev:'medium', dim:'内容结构', title:'包含 FAQ 或定义性语句', desc:'未检测到 FAQ 格式或定义性语句（"X 是指..."）' },
-    { id:'KA-01', pass:true, sev:'high', dim:'知识对齐', title:'知识库事实覆盖率 ≥ 60%', desc:'已覆盖知识库 12/15 个关键事实（80%）' },
+    { id:'CS-01', pass:true, sev:'high', dim:'内容结构', title:'H1 标题存在且唯一', desc:'文章包含唯一的 H1 标题' },
+    { id:'CS-02', pass:true, sev:'medium', dim:'内容结构', title:'标题层级无跳跃', desc:'H1 → H2 → H3 层级完整' },
+    { id:'CS-03', pass:false, sev:'low', dim:'内容结构', title:'段落平均长度 ≤ 200 字', desc:'当前平均 280 字，部分段落过长' },
+    { id:'CS-04', pass:false, sev:'medium', dim:'内容结构', title:'包含 FAQ 或定义性语句', desc:'未检测到 FAQ 格式或定义性语句' },
+    { id:'KA-01', pass:true, sev:'high', dim:'知识对齐', title:'知识库事实覆盖率 ≥ 60%', desc:'已覆盖 12/15 个关键事实（80%）' },
     { id:'KA-02', pass:true, sev:'medium', dim:'知识对齐', title:'核心术语频次 ≥ 3', desc:'"GEO" 出现 8 次，"生成式引擎优化" 出现 3 次' },
-    { id:'KA-03', pass:true, sev:'high', dim:'知识对齐', title:'无知识库矛盾内容', desc:'未检测到与知识库矛盾的内容' },
-    { id:'TG-01', pass:true, sev:'high', dim:'技术 GEO', title:'llms.txt 可达', desc:'/llms.txt 返回 200，包含本站 3 个栏目' },
-    { id:'TG-02', pass:false, sev:'medium', dim:'技术 GEO', title:'Schema.org JSON-LD 完整', desc:'缺少 Article 类型的 dateModified 和 author 字段' },
-    { id:'TG-03', pass:true, sev:'medium', dim:'技术 GEO', title:'规范化链接正确', desc:'canonical 链接指向正确 URL' },
-    { id:'AV-01', pass:false, sev:'high', dim:'AI 可见度', title:'关键词进入 AI 搜索前 10', desc:'核心词"GEO 运营"在豆包搜索中排名第 15 位' },
-    { id:'AV-02', pass:false, sev:'medium', dim:'AI 可见度', title:'竞品引用占比 ≤ 50%', desc:'竞品"XX 公司"在同类主题 AI 引用中占比 62%' }
+    { id:'KA-03', pass:true, sev:'high', dim:'知识对齐', title:'无知识库矛盾内容', desc:'未检测到矛盾内容' },
+    { id:'TG-01', pass:true, sev:'high', dim:'技术 GEO', title:'llms.txt 可达', desc:'/llms.txt 返回 200' },
+    { id:'TG-02', pass:false, sev:'medium', dim:'技术 GEO', title:'Schema.org JSON-LD 完整', desc:'缺少 dateModified 和 author 字段' },
+    { id:'TG-03', pass:true, sev:'medium', dim:'技术 GEO', title:'规范化链接正确', desc:'canonical 链接正确' },
+    { id:'AV-01', pass:false, sev:'high', dim:'AI 可见度', title:'关键词进入 AI 搜索前 10', desc:'"GEO 运营"在豆包排名第 15' },
+    { id:'AV-02', pass:false, sev:'medium', dim:'AI 可见度', title:'竞品引用占比 ≤ 50%', desc:'竞品引用占比 62%' }
   ],
   recs: [
-    { sev:'high', dim:'AI 可见度', title:'提升核心关键词的 AI 搜索排名', desc:'"GEO 运营"在豆包 AI 搜索中排名第 15，未进入前 10。AI 引擎倾向于引用排名靠前的内容。', impact:9, fix:'在文章开头和 H2 标题中增加"GEO 运营"关键词的自然出现频次；添加与"GEO 运营"相关的 FAQ 段落。' },
-    { sev:'high', dim:'内容结构', title:'添加 FAQ 或定义性语句模块', desc:'AI 引擎特别偏好引用 FAQ 格式和定义性语句。当前文章缺少这类结构化内容。', impact:8, fix:'在文章开头添加 2-3 个 FAQ 问答，如"什么是 GEO 运营？""GEO 运营和 SEO 有什么区别？"' },
-    { sev:'medium', dim:'技术 GEO', title:'补全 Schema.org JSON-LD 字段', desc:'当前 Article 类型的 JSON-LD 缺少 dateModified 和 author 字段，影响 AI 引擎对内容时效性和权威性的判断。', impact:5, fix:'在页面 head 中补全 JSON-LD：dateModified、author 字段。' },
-    { sev:'medium', dim:'AI 可见度', title:'降低竞品在 AI 引用中的占比', desc:'竞品"XX 公司"在"GEO 运营"相关 AI 搜索结果的引用占比达 62%，超过 50% 警戒线。', impact:7, fix:'针对竞品高频引用的内容角度，生产差异化内容；在知识库中补充竞品未覆盖的独家数据和案例。' },
-    { sev:'low', dim:'内容结构', title:'缩短过长段落', desc:'文章平均段落长度 280 字，超过 200 字的建议阈值。过长的段落不利于 AI 提取关键信息。', impact:3, fix:'将超过 200 字的段落拆分为 2-3 个短段落，每段聚焦一个核心观点。' }
+    { sev:'high', dim:'AI 可见度', title:'提升核心关键词的 AI 搜索排名', desc:'"GEO 运营"在豆包排名第 15，未进入前 10。', impact:9, fix:'在文章开头和 H2 标题中增加关键词自然出现频次；添加 FAQ 段落。' },
+    { sev:'high', dim:'内容结构', title:'添加 FAQ 或定义性语句模块', desc:'AI 引擎偏好引用 FAQ 格式和定义性语句。', impact:8, fix:'在文章开头添加 2-3 个 FAQ 问答。' },
+    { sev:'medium', dim:'技术 GEO', title:'补全 Schema.org JSON-LD 字段', desc:'缺少 dateModified 和 author 字段。', impact:5, fix:'在页面 head 中补全 JSON-LD。' },
+    { sev:'medium', dim:'AI 可见度', title:'降低竞品在 AI 引用中的占比', desc:'竞品引用占比达 62%，超过 50% 警戒线。', impact:7, fix:'生产差异化内容；补充独家数据和案例。' },
+    { sev:'low', dim:'内容结构', title:'缩短过长段落', desc:'平均段落长度 280 字，超过建议阈值。', impact:3, fix:'将超过 200 字的段落拆分为 2-3 个短段落。' }
   ],
   history: [
     { id:103, score:72, grade:'良好', date:'2026-11-01 10:30', delta:null },
@@ -1275,7 +1897,6 @@ function runDiagnosis() {
   btn.style.opacity = '.6';
   fill.style.width = '0%';
 
-  // Reset step items
   stepsList.querySelectorAll('.progress-step-item').forEach(el => {
     el.classList.remove('done', 'active');
     el.querySelector('svg').innerHTML = '<circle cx="12" cy="12" r="10"/>';
@@ -1296,9 +1917,8 @@ function runDiagnosis() {
       fill.style.width = steps[i].pct + '%';
       stepText.textContent = steps[i].text;
 
-      // Mark previous step done
       if (i > 0 && steps[i-1].step >= 0) {
-        const prevEl = stepsList.querySelector(`[data-step="${steps[i-1].step}"]`);
+        const prevEl = stepsList.querySelector('[data-step="' + steps[i-1].step + '"]');
         if (prevEl) {
           prevEl.classList.remove('active');
           prevEl.classList.add('done');
@@ -1306,9 +1926,8 @@ function runDiagnosis() {
         }
       }
 
-      // Mark current step active
       if (steps[i].step >= 0) {
-        const curEl = stepsList.querySelector(`[data-step="${steps[i].step}"]`);
+        const curEl = stepsList.querySelector('[data-step="' + steps[i].step + '"]');
         if (curEl) {
           curEl.classList.add('active');
           curEl.querySelector('svg').innerHTML = '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>';
@@ -1318,9 +1937,7 @@ function runDiagnosis() {
       i++;
     } else {
       clearInterval(timer);
-
-      // Mark last step done
-      const lastDone = stepsList.querySelector(`[data-step="4"]`);
+      const lastDone = stepsList.querySelector('[data-step="4"]');
       if (lastDone) {
         lastDone.classList.remove('active');
         lastDone.classList.add('done');
@@ -1331,7 +1948,7 @@ function runDiagnosis() {
         overlay.classList.remove('show');
         btn.disabled = false;
         btn.style.opacity = '1';
-        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> 重新诊断`;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> 重新诊断';
         showResults();
       }, 600);
     }
@@ -1349,9 +1966,7 @@ function showResults() {
   document.getElementById('diag-detail').classList.add('fade-up');
 
   const d = MOCK;
-
-  // Animate ring
-  const circ = 2 * Math.PI * 50; // ~314
+  const circ = 2 * Math.PI * 50;
   const offset = circ - (d.total / 100) * circ;
   setTimeout(() => {
     const ring = document.getElementById('ring-fg');
@@ -1359,15 +1974,12 @@ function showResults() {
     ring.setAttribute('stroke', d.gradeColor);
   }, 100);
 
-  // Animate score number
   animateValue('ring-value', 0, d.total, 1000);
 
-  // Grade
   const gradeEl = document.getElementById('ring-grade');
   gradeEl.textContent = d.grade;
   gradeEl.style.color = d.gradeColor;
 
-  // Dimension bars
   setTimeout(() => {
     ['cs','ka','tg','av'].forEach(k => {
       const dim = d.dims[k];
@@ -1376,7 +1988,6 @@ function showResults() {
     });
   }, 200);
 
-  // Render tabs
   renderFindings(d.findings);
   renderRecs(d.recs);
   renderHistory(d.history);
@@ -1406,14 +2017,7 @@ function renderFindings(findings) {
       : (f.sev === 'high'
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>');
-    return `<div class="finding fade-up">
-      <div class="finding__icon finding__icon--${cls}">${icon}</div>
-      <div class="finding__body">
-        <div class="finding__title">${f.title}</div>
-        <div class="finding__desc">${f.desc}</div>
-        <span class="finding__tag">${f.dim} · ${f.id}</span>
-      </div>
-    </div>`;
+    return '<div class="finding fade-up"><div class="finding__icon finding__icon--' + cls + '">' + icon + '</div><div class="finding__body"><div class="finding__title">' + f.title + '</div><div class="finding__desc">' + f.desc + '</div><span class="finding__tag">' + f.dim + ' · ' + f.id + '</span></div></div>';
   }).join('');
 }
 
@@ -1426,19 +2030,7 @@ function renderRecs(recs) {
     const impCls = r.impact >= 8 ? 'high' : (r.impact >= 5 ? 'medium' : 'low');
     const impLabel = r.impact >= 8 ? '高影响' : (r.impact >= 5 ? '中影响' : '低影响');
     const sevColor = r.sev === 'high' ? 'var(--gf-red-600)' : (r.sev === 'medium' ? 'var(--gf-amber-600)' : 'var(--gf-gray-400)');
-    return `<div class="rec fade-up">
-      <div class="rec__head">
-        <div class="rec__title">
-          <span style="color:${sevColor};margin-right:4px;">●</span>${r.title}
-        </div>
-        <span class="rec__impact rec__impact--${impCls}">${impLabel} ${r.impact}/10</span>
-      </div>
-      <div class="rec__desc">${r.desc}</div>
-      <div class="rec__fix">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m6.3 6.3 2.8 2.8"/><path d="M2 12h4"/><path d="m6.3 17.7 2.8-2.8"/><path d="M12 18v4"/><path d="m17.7 17.7-2.8-2.8"/><path d="M18 12h4"/><path d="m17.7 6.3-2.8 2.8"/></svg>
-        <span>${r.fix}</span>
-      </div>
-    </div>`;
+    return '<div class="rec fade-up"><div class="rec__head"><div class="rec__title"><span style="color:' + sevColor + ';margin-right:4px;">●</span>' + r.title + '</div><span class="rec__impact rec__impact--' + impCls + '">' + impLabel + ' ' + r.impact + '/10</span></div><div class="rec__desc">' + r.desc + '</div><div class="rec__fix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m6.3 6.3 2.8 2.8"/><path d="M2 12h4"/><path d="m6.3 17.7 2.8-2.8"/><path d="M12 18v4"/><path d="m17.7 17.7-2.8-2.8"/><path d="M18 12h4"/><path d="m17.7 6.3-2.8 2.8"/></svg><span>' + r.fix + '</span></div></div>';
   }).join('');
 }
 
@@ -1455,16 +2047,9 @@ function renderHistory(history) {
       deltaHtml = '<span class="hist__delta hist__delta--base">基准</span>';
     } else {
       const up = h.delta.startsWith('+');
-      deltaHtml = `<span class="hist__delta hist__delta--${up ? 'up' : 'down'}">${h.delta}</span>`;
+      deltaHtml = '<span class="hist__delta hist__delta--' + (up ? 'up' : 'down') + '">' + h.delta + '</span>';
     }
-    return `<div class="hist fade-up">
-      <div class="hist__score" style="background:${bg};color:${color};">${h.score}</div>
-      <div class="hist__info">
-        <div class="hist__label">#${h.id} · ${h.grade}</div>
-        <div class="hist__meta">${h.date}</div>
-      </div>
-      ${deltaHtml}
-    </div>`;
+    return '<div class="hist fade-up"><div class="hist__score" style="background:' + bg + ';color:' + color + ';">' + h.score + '</div><div class="hist__info"><div class="hist__label">#' + h.id + ' · ' + h.grade + '</div><div class="hist__meta">' + h.date + '</div></div>' + deltaHtml + '</div>';
   }).join('');
 }
 

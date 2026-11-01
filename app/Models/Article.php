@@ -229,4 +229,16 @@ class Article extends Model
     {
         return $query->where('status', 'published')->whereNull('deleted_at');
     }
+
+    // ── GEO 诊断关系 ──
+
+    public function geoDiagnosisRuns(): HasMany
+    {
+        return $this->hasMany(GeoDiagnosisRun::class);
+    }
+
+    public function latestGeoDiagnosisRun(): HasOne
+    {
+        return $this->hasOne(GeoDiagnosisRun::class)->latestOfMany();
+    }
 }

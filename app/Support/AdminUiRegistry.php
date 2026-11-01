@@ -77,6 +77,17 @@ final class AdminUiRegistry
                 ))),
                 'recent_tone' => 'green',
             ],
+            [
+                'key' => 'geo-diagnosis', 'group' => 'geo', 'label_key' => 'admin.nav.geo_diagnosis',
+                'icon' => 'stethoscope', 'route' => 'admin.geo-diagnosis.index', 'protected' => false,
+                'patterns' => ['admin.geo-diagnosis.*', 'admin.brand-monitor.*', 'admin.article-diagnosis.*'],
+                'recent_tone' => 'blue',
+            ],
+            [
+                'key' => 'geo-inflow', 'group' => 'geo', 'label_key' => 'admin.nav.geo_inflow',
+                'icon' => 'activity', 'route' => 'admin.geo-inflow.index', 'protected' => false,
+                'patterns' => ['admin.geo-inflow.*'], 'recent_tone' => 'violet',
+            ],
         ];
     }
 
@@ -112,6 +123,7 @@ final class AdminUiRegistry
             'data' => 'admin.nav.group_data',
             'content' => 'admin.nav.group_content',
             'distribution' => 'admin.nav.group_distribution',
+            'geo' => 'admin.nav.group_geo',
             'system' => 'admin.nav.group_system',
         ];
     }

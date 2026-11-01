@@ -217,3 +217,15 @@ Schedule::command('geoflow:geo-inflow-batch-evaluate')
     ->twiceDaily(2, 14)          // 每天 02:00 / 14:00 各跑一次
     ->onOneServer()
     ->withoutOverlapping(120);   // 2 小时内不允许重叠
+
+// GEO 诊断：品牌监测定时任务（每小时运行一次）
+Schedule::job(new \App\Jobs\RunBrandMonitorJob())
+    ->hourly()
+    ->onOneServer()
+    ->withoutOverlapping(60);
+
+// GEO 诊断：清理过期记录（每天凌晨 3 点）
+Schedule::job(new \App\Jobs\CleanupOldDiagnosisJob())
+    ->dailyAt('03:00')
+    ->onOneServer()
+    ->withoutOverlapping(30);
