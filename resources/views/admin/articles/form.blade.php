@@ -1199,6 +1199,7 @@
                                     class="mb-4 overflow-hidden rounded-xl border border-gray-200 bg-gray-50/80 shadow-sm"
                                     data-titles-url="{{ \App\Support\AdminWeb::routePath('admin.articles.editor.titles') }}"
                                     data-generate-url="{{ \App\Support\AdminWeb::routePath('admin.articles.editor.generate') }}"
+                                    data-geo-tiers-url="{{ \App\Support\AdminWeb::routePath('admin.articles.ai-quality.optimization.geo-tiers') }}"
                                 >
                                     <div class="flex items-start gap-3 px-4 py-4">
                                         <div class="flex min-w-0 flex-1 items-start gap-3">
@@ -1258,6 +1259,62 @@
                                                 <span>{{ __('admin.article_assistant.generate.button') }}</span>
                                             </button>
                                         </div>
+                                    </div>
+                                    {{-- GEO 改写模式选择行 --}}
+                                    <div class="grid gap-3 border-t border-gray-200 bg-white/70 px-4 py-3 md:grid-cols-4">
+                                        <div class="min-w-0">
+                                            <label for="article-geo-tier" class="block text-xs font-semibold text-gray-700">{{ __('admin.article_assistant.generate.geo_tier_label') }}</label>
+                                            <div class="relative mt-1">
+                                                <select id="article-geo-tier" class="block w-full appearance-none truncate rounded-md border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                                    <option value="auto">{{ __('admin.article_assistant.generate.geo_tier_auto') }}</option>
+                                                    <option value="light">{{ __('admin.article_assistant.generate.geo_tier_light') }}</option>
+                                                    <option value="medium">{{ __('admin.article_assistant.generate.geo_tier_medium') }}</option>
+                                                    <option value="heavy">{{ __('admin.article_assistant.generate.geo_tier_heavy') }}</option>
+                                                </select>
+                                                <i data-lucide="chevron-down" aria-hidden="true" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"></i>
+                                            </div>
+                                            <p id="article-geo-tier-hint" class="mt-1 text-xs text-gray-500">{{ __('admin.article_assistant.generate.geo_tier_auto_hint') }}</p>
+                                        </div>
+                                        <div class="flex items-end md:col-span-3">
+                                            <div class="flex w-full flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    id="article-toggle-original"
+                                                    class="inline-flex items-center rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                                                >
+                                                    <i data-lucide="file-text" class="mr-1.5 h-3.5 w-3.5"></i>
+                                                    <span>{{ __('admin.article_assistant.generate.toggle_original_content') }}</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    id="article-toggle-brand"
+                                                    class="inline-flex items-center rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                                                >
+                                                    <i data-lucide="badge-info" class="mr-1.5 h-3.5 w-3.5"></i>
+                                                    <span>{{ __('admin.article_assistant.generate.toggle_brand_info') }}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{-- 原文输入区（折叠） --}}
+                                    <div id="article-original-content-panel" class="hidden border-t border-gray-200 bg-white/70 px-4 py-3">
+                                        <label for="article-original-content" class="block text-xs font-semibold text-gray-700">{{ __('admin.article_assistant.generate.original_content_label') }}</label>
+                                        <textarea
+                                            id="article-original-content"
+                                            rows="6"
+                                            class="mt-1 block w-full rounded-md border-gray-300 bg-white text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="{{ __('admin.article_assistant.generate.original_content_placeholder') }}"
+                                        ></textarea>
+                                    </div>
+                                    {{-- 品牌策略输入区（折叠） --}}
+                                    <div id="article-brand-info-panel" class="hidden border-t border-gray-200 bg-white/70 px-4 py-3">
+                                        <label for="article-brand-info" class="block text-xs font-semibold text-gray-700">{{ __('admin.article_assistant.generate.brand_info_label') }}</label>
+                                        <textarea
+                                            id="article-brand-info"
+                                            rows="4"
+                                            class="mt-1 block w-full rounded-md border-gray-300 bg-white text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="{{ __('admin.article_assistant.generate.brand_info_placeholder') }}"
+                                        ></textarea>
                                     </div>
                                     <div id="article-ai-status-row" class="hidden border-t border-gray-200 bg-white/70 px-4 py-3">
                                         <div class="flex items-center gap-3">

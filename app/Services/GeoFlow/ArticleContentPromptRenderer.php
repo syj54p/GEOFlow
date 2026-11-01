@@ -4,14 +4,14 @@ namespace App\Services\GeoFlow;
 
 final class ArticleContentPromptRenderer
 {
-    public function renderForEditor(string $title, string $keyword, ?string $promptContent, string $knowledgeContext = '', string $imageContext = ''): string
+    public function renderForEditor(string $title, string $keyword, ?string $promptContent, string $knowledgeContext = '', string $imageContext = '', string $originalContent = '', string $brandInfo = ''): string
     {
-        return $this->render($title, $keyword, $promptContent, $knowledgeContext, $imageContext);
+        return $this->render($title, $keyword, $promptContent, $knowledgeContext, $imageContext, $originalContent, $brandInfo);
     }
 
-    public function renderForWorker(string $title, string $keyword, ?string $promptContent, string $knowledgeContext = '', string $imageContext = ''): string
+    public function renderForWorker(string $title, string $keyword, ?string $promptContent, string $knowledgeContext = '', string $imageContext = '', string $originalContent = '', string $brandInfo = ''): string
     {
-        return $this->render($title, $keyword, $promptContent, $knowledgeContext, $imageContext);
+        return $this->render($title, $keyword, $promptContent, $knowledgeContext, $imageContext, $originalContent, $brandInfo);
     }
 
     /**
@@ -23,11 +23,13 @@ final class ArticleContentPromptRenderer
         ?string $promptContent,
         string $knowledgeContext,
         string $imageContext = '',
+        string $originalContent = '',
+        string $brandInfo = '',
     ): string {
         $prompt = trim((string) $promptContent);
         $isFallbackPrompt = false;
         if ($prompt === '') {
-            $prompt = "请围绕标题“{$title}”和关键词“{$keyword}”生成一篇结构清晰、语言自然的中文文章。";
+            $prompt = '请围绕标题“' . $title . '”和关键词“' . $keyword . '”生成一篇结构清晰、语言自然的中文文章。';
             $isFallbackPrompt = true;
         }
         $isEnglish = $this->isLikelyEnglishPrompt($prompt);
@@ -35,21 +37,28 @@ final class ArticleContentPromptRenderer
         $hasExplicitContextVariables = $isFallbackPrompt || $this->promptHasKnownContextVariables($prompt);
         $hasExplicitKnowledgeVariable = $this->promptHasContextVariable($prompt, 'knowledge');
         $hasExplicitImageVariable = $this->promptHasContextVariable($prompt, 'images');
+        $hasExplicitOriginalContentVariable = $this->promptHasContextVariable($prompt, 'original_content');
+        $hasExplicitBrandInfoVariable = $this->promptHasContextVariable($prompt, 'brand_info');
         $renderedPrompt = $this->renderPromptTemplate($prompt, [
             'title' => $title,
             'keyword' => $keyword,
             'knowledge' => $knowledgeContext,
             'images' => $imageContext,
+            'original_content' => $originalContent,
+            'brand_info' => $brandInfo,
         ]);
 
         if (! $hasExplicitContextVariables) {
-            $renderedPrompt = $this->appendSmartPromptContext($renderedPrompt, $title, $keyword, $knowledgeContext, $imageContext, $isEnglish);
+            $renderedPrompt = $this->appendSmartPromptContext($renderedPrompt, $title, $keyword, $knowledgeContext, $imageContext, $isEnglish, $brandInfo);
         } else {
             if (! $hasExplicitKnowledgeVariable) {
                 $renderedPrompt = $this->appendKnowledgeContext($renderedPrompt, $knowledgeContext, $isEnglish);
             }
             if (! $hasExplicitImageVariable) {
                 $renderedPrompt = $this->appendImageContext($renderedPrompt, $imageContext, $isEnglish);
+            }
+            if (! $hasExplicitBrandInfoVariable) {
+                $renderedPrompt = $this->appendBrandInfoContext($renderedPrompt, $brandInfo, $isEnglish);
             }
         }
 
@@ -63,8 +72,8 @@ final class ArticleContentPromptRenderer
 
     private function promptHasKnownContextVariables(string $prompt): bool
     {
-        return preg_match('/\{\{\s*(title|keyword|knowledge|images)\s*\}\}/iu', $prompt) === 1
-            || preg_match('/\{\{#if\s+(title|keyword|knowledge|images)\s*\}\}/iu', $prompt) === 1;
+        return preg_match('/\{\{\s*(title|keyword|knowledge|images|original_content|brand_info)\s*\}\}/iu', $prompt) === 1
+            || preg_match('/\{\{#if\s+(title|keyword|knowledge|images|original_content|brand_info)\s*\}\}/iu', $prompt) === 1;
     }
 
     private function promptHasContextVariable(string $prompt, string $name): bool
@@ -100,7 +109,7 @@ final class ArticleContentPromptRenderer
     }
 
     /**
-     * @param  array{title:string, keyword:string, knowledge:string, images:string}  $context
+     * @param  array{title:string, keyword:string, knowledge:string, images:string, original_content?:string, brand_info?:string}  $context
      */
     private function promptContextValue(string $name, array $context): string
     {
@@ -109,16 +118,18 @@ final class ArticleContentPromptRenderer
             'keyword' => $context['keyword'],
             'knowledge' => $context['knowledge'],
             'images' => $context['images'],
+            'original_content' => $context['original_content'] ?? '',
+            'brand_info' => $context['brand_info'] ?? '',
             default => '',
         };
     }
 
     private function isKnownPromptContextName(string $name): bool
     {
-        return in_array(mb_strtolower($name, 'UTF-8'), ['title', 'keyword', 'knowledge', 'images'], true);
+        return in_array(mb_strtolower($name, 'UTF-8'), ['title', 'keyword', 'knowledge', 'images', 'original_content', 'brand_info'], true);
     }
 
-    private function appendSmartPromptContext(string $prompt, string $title, string $keyword, string $knowledgeContext, string $imageContext, bool $isEnglish): string
+    private function appendSmartPromptContext(string $prompt, string $title, string $keyword, string $knowledgeContext, string $imageContext, bool $isEnglish, string $brandInfo = ''): string
     {
         if ($isEnglish) {
             $lines = [
@@ -133,6 +144,10 @@ final class ArticleContentPromptRenderer
                 $lines[] = $knowledgeContext;
             }
             $lines = $this->appendImageContextLines($lines, $imageContext, true);
+            if (trim($brandInfo) !== '') {
+                $lines[] = '- Brand strategy:';
+                $lines[] = $brandInfo;
+            }
 
             return trim($prompt)."\n\n".implode("\n", $lines);
         }
@@ -149,6 +164,10 @@ final class ArticleContentPromptRenderer
             $lines[] = $knowledgeContext;
         }
         $lines = $this->appendImageContextLines($lines, $imageContext, false);
+        if (trim($brandInfo) !== '') {
+            $lines[] = '- 品牌策略：';
+            $lines[] = $brandInfo;
+        }
 
         return trim($prompt)."\n\n".implode("\n", $lines);
     }
@@ -173,6 +192,19 @@ final class ArticleContentPromptRenderer
         }
 
         return trim($prompt)."\n\n".$this->imageContextBlock($imageContext, $isEnglish);
+    }
+
+    private function appendBrandInfoContext(string $prompt, string $brandInfo, bool $isEnglish): string
+    {
+        if (trim($brandInfo) === '') {
+            return trim($prompt);
+        }
+
+        if ($isEnglish) {
+            return trim($prompt)."\n\nBrand strategy:\n".$brandInfo;
+        }
+
+        return trim($prompt)."\n\n【品牌策略】\n".$brandInfo;
     }
 
     /**

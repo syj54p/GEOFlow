@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ArticleEditorAssetController;
 use App\Http\Controllers\Admin\ArticleEditorAssistantController;
 use App\Http\Controllers\Admin\ArticlePermalinkController;
 use App\Http\Controllers\Admin\AuthorController;
+use App\Http\Controllers\Admin\ContentFactoryController;
 use App\Http\Controllers\Admin\BrowserClientController;
 use App\Http\Controllers\Admin\BrowserConnectionApprovalController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -426,6 +427,13 @@ Route::prefix($adminPrefix)->name('admin.')->middleware(['admin.locale'])->group
                 ->middleware('throttle:admin-sensitive')
                 ->name('ai-quality.optimization.rollback')
                 ->whereNumber(['articleId', 'runId']);
+            Route::get('ai-quality/optimization/geo-tiers', [ArticleAiOptimizationController::class, 'geoTiers'])
+                ->middleware('throttle:120,1')
+                ->name('ai-quality.optimization.geo-tiers');
+            Route::get('{articleId}/ai-quality/optimization/geo-tier', [ArticleAiOptimizationController::class, 'geoTierRecommendation'])
+                ->middleware('throttle:120,1')
+                ->name('ai-quality.optimization.geo-tier')
+                ->whereNumber('articleId');
             Route::post('{articleId}/ai-quality/workflow-retry', [ArticleController::class, 'retryAiQualityWorkflow'])
                 ->middleware('throttle:admin-sensitive')
                 ->name('ai-quality.workflow-retry')
@@ -433,6 +441,24 @@ Route::prefix($adminPrefix)->name('admin.')->middleware(['admin.locale'])->group
             Route::post('{articleId}/ai-quality/override', [ArticleController::class, 'overrideAiQuality'])->name('ai-quality.override')->whereNumber('articleId');
             Route::post('{articleId}/editor/images/upload', [ArticleEditorAssetController::class, 'uploadImage'])->name('editor.images.upload')->whereNumber('articleId');
             Route::put('{articleId}', [ArticleController::class, 'update'])->name('update');
+        });
+
+        Route::prefix('content-factory')->name('content-factory.')->group(function () {
+            Route::get('stages', [ContentFactoryController::class, 'stages'])
+                ->middleware('throttle:120,1')
+                ->name('stages');
+            Route::get('task/{taskId}/distribution', [ContentFactoryController::class, 'taskDistribution'])
+                ->middleware('throttle:120,1')
+                ->name('task.distribution')
+                ->whereNumber('taskId');
+            Route::get('article/{articleId}/progress', [ContentFactoryController::class, 'articleProgress'])
+                ->middleware('throttle:120,1')
+                ->name('article.progress')
+                ->whereNumber('articleId');
+            Route::post('article/{articleId}/generate-schema', [ContentFactoryController::class, 'generateSchema'])
+                ->middleware('throttle:admin-sensitive')
+                ->name('article.generate-schema')
+                ->whereNumber('articleId');
         });
 
         Route::prefix('manual-publications')->name('manual-publications.')->group(function () {

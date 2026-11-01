@@ -100,6 +100,8 @@ final class ArticleEditorAssistantController extends Controller
                 'integer',
                 'min:1',
             ],
+            'original_content' => ['nullable', 'string', 'max:50000'],
+            'brand_info' => ['nullable', 'string', 'max:5000'],
         ]);
 
         $knowledgeBase = KnowledgeBase::query()
@@ -153,6 +155,9 @@ final class ArticleEditorAssistantController extends Controller
             trim((string) ($validated['keyword'] ?? '')),
             (string) $prompt->content,
             $knowledgeContext,
+            '',
+            trim((string) ($validated['original_content'] ?? '')),
+            trim((string) ($validated['brand_info'] ?? '')),
         );
 
         $response = response()->stream(function () use ($aiModel, $contentPrompt, $executionContext, $knowledgeBase): iterable {

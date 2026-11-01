@@ -73,6 +73,8 @@ class Article extends Model
         'ai_quality_policy_version',
         'ai_quality_policy_snapshot',
         'generation_evidence_snapshot',
+        'schema_org_data',
+        'factory_stage',
     ];
 
     protected function casts(): array
@@ -92,6 +94,8 @@ class Article extends Model
             'ai_quality_policy_version' => 'integer',
             'ai_quality_policy_snapshot' => 'array',
             'generation_evidence_snapshot' => 'array',
+            'schema_org_data' => 'array',
+            'factory_stage' => 'string',
         ];
     }
 

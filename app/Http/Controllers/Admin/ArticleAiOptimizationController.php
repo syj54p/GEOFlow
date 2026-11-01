@@ -12,6 +12,7 @@ use App\Models\ArticleAiOptimizationRun;
 use App\Services\Admin\AdminAiModelAccessResolver;
 use App\Services\GeoFlow\ArticleAiOptimizationCoordinator;
 use App\Services\GeoFlow\ArticleAiOptimizationException;
+use App\Services\GeoFlow\ArticleGeoRewriteTierResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Lang;
@@ -21,6 +22,7 @@ class ArticleAiOptimizationController extends Controller
     public function __construct(
         private readonly ArticleAiOptimizationCoordinator $coordinator,
         private readonly AdminAiModelAccessResolver $adminAiModelAccessResolver,
+        private readonly ArticleGeoRewriteTierResolver $geoRewriteTierResolver,
     ) {}
 
     public function store(StartArticleAiOptimizationRequest $request, int $articleId): JsonResponse
@@ -114,6 +116,39 @@ class ArticleAiOptimizationController extends Controller
         } catch (ArticleAiOptimizationException $exception) {
             return $this->failure($exception);
         }
+    }
+
+    /**
+     * 获取所有可用的 GEO 改写级别列表。
+     */
+    public function geoTiers(): JsonResponse
+    {
+        return response()->json([
+            'data' => ArticleGeoRewriteTierResolver::availableTiers(),
+        ]);
+    }
+
+    /**
+     * 根据文章最新质量评分，返回推荐的 GEO 改写级别。
+     */
+    public function geoTierRecommendation(int $articleId): JsonResponse
+    {
+        $article = Article::query()->whereKey($articleId)->firstOrFail();
+
+        $recommendation = $this->geoRewriteTierResolver->resolveForArticle($article);
+
+        if ($recommendation === null) {
+            return response()->json([
+                'error' => [
+                    'code' => 'article_ai_optimization_no_quality_check',
+                    'message' => '该文章尚无质量评分记录，无法推荐改写级别。',
+                ],
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $recommendation,
+        ]);
     }
 
     private function ownedRun(int $articleId, int $runId): ArticleAiOptimizationRun

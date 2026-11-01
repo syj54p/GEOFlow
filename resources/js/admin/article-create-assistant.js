@@ -42,6 +42,14 @@ if (assistantRoot) {
     const statusText = document.getElementById('article-ai-status');
     const characterCount = document.getElementById('article-ai-character-count');
     const progressBar = document.getElementById('article-ai-progress');
+    const geoTierSelect = document.getElementById('article-geo-tier');
+    const geoTierHint = document.getElementById('article-geo-tier-hint');
+    const toggleOriginalButton = document.getElementById('article-toggle-original');
+    const originalContentPanel = document.getElementById('article-original-content-panel');
+    const originalContentTextarea = document.getElementById('article-original-content');
+    const toggleBrandButton = document.getElementById('article-toggle-brand');
+    const brandInfoPanel = document.getElementById('article-brand-info-panel');
+    const brandInfoTextarea = document.getElementById('article-brand-info');
 
     let titlePage = 1;
     let titleLastPage = 1;
@@ -370,6 +378,7 @@ if (assistantRoot) {
             window.sessionStorage.setItem('geoflow.articleAssistant.knowledgeBaseId', knowledgeBaseSelect?.value || '');
             window.sessionStorage.setItem('geoflow.articleAssistant.promptId', promptSelect?.value || '');
             window.sessionStorage.setItem('geoflow.articleAssistant.modelId', modelSelect?.value || '');
+            window.sessionStorage.setItem('geoflow.articleAssistant.geoTier', geoTierSelect?.value || 'auto');
         } catch {
             // 会话存储不可用时继续使用当前页面选择。
         }
@@ -380,6 +389,7 @@ if (assistantRoot) {
             const knowledgeBaseId = window.sessionStorage.getItem('geoflow.articleAssistant.knowledgeBaseId') || '';
             const promptId = window.sessionStorage.getItem('geoflow.articleAssistant.promptId') || '';
             const modelId = window.sessionStorage.getItem('geoflow.articleAssistant.modelId') || '';
+            const geoTier = window.sessionStorage.getItem('geoflow.articleAssistant.geoTier') || 'auto';
             if (knowledgeBaseSelect?.querySelector(`option[value="${CSS.escape(knowledgeBaseId)}"]`)) {
                 knowledgeBaseSelect.value = knowledgeBaseId;
             }
@@ -389,8 +399,24 @@ if (assistantRoot) {
             if (modelSelect?.querySelector(`option[value="${CSS.escape(modelId)}"]`)) {
                 modelSelect.value = modelId;
             }
+            if (geoTierSelect?.querySelector(`option[value="${CSS.escape(geoTier)}"]`)) {
+                geoTierSelect.value = geoTier;
+            }
         } catch {
             // 会话存储不可用时保留默认选项。
+        }
+    };
+
+    const togglePanel = (panel, button, forceState) => {
+        if (!panel) return;
+        const isHidden = panel.classList.contains('hidden');
+        const shouldShow = forceState !== undefined ? forceState : isHidden;
+        panel.classList.toggle('hidden', !shouldShow);
+        button?.classList.toggle('border-blue-300', shouldShow);
+        button?.classList.toggle('bg-blue-50', shouldShow);
+        button?.classList.toggle('text-blue-700', shouldShow);
+        if (shouldShow) {
+            panel.querySelector('textarea')?.focus();
         }
     };
 
@@ -430,6 +456,9 @@ if (assistantRoot) {
         knowledgeBaseSelect.disabled = active;
         promptSelect.disabled = active;
         modelSelect.disabled = active;
+        if (geoTierSelect) geoTierSelect.disabled = active;
+        if (originalContentTextarea) originalContentTextarea.disabled = active;
+        if (brandInfoTextarea) brandInfoTextarea.disabled = active;
         generateButton.classList.toggle('bg-blue-600', !active);
         generateButton.classList.toggle('hover:bg-blue-700', !active);
         generateButton.classList.toggle('bg-amber-500', active);
@@ -563,6 +592,8 @@ if (assistantRoot) {
                     knowledge_base_id: Number(knowledgeBaseSelect.value),
                     prompt_id: Number(promptSelect.value),
                     ai_model_id: Number(modelSelect.value),
+                    original_content: originalContentTextarea?.value.trim() || '',
+                    brand_info: brandInfoTextarea?.value.trim() || '',
                 }),
                 signal: generationController.signal,
             });
@@ -605,8 +636,20 @@ if (assistantRoot) {
     };
 
     knowledgeBaseSelect?.addEventListener('change', saveAssistantPreference);
-    promptSelect?.addEventListener('change', saveAssistantPreference);
+    promptSelect?.addEventListener('change', () => {
+        saveAssistantPreference();
+        // Auto-show original content panel when a GEO rewrite prompt is selected
+        const selectedOption = promptSelect?.selectedOptions?.[0];
+        const promptName = (selectedOption?.textContent || '').toLowerCase();
+        const isGeoRewrite = promptName.includes('geo') && (promptName.includes('改写') || promptName.includes('rewrite'));
+        if (isGeoRewrite && originalContentTextarea?.value.trim() === '') {
+            togglePanel(originalContentPanel, toggleOriginalButton, true);
+        }
+    });
     modelSelect?.addEventListener('change', saveAssistantPreference);
+    geoTierSelect?.addEventListener('change', saveAssistantPreference);
+    toggleOriginalButton?.addEventListener('click', () => togglePanel(originalContentPanel, toggleOriginalButton));
+    toggleBrandButton?.addEventListener('click', () => togglePanel(brandInfoPanel, toggleBrandButton));
     generateButton?.addEventListener('click', startGeneration);
     window.addEventListener('beforeunload', (event) => {
         if (!generationController) {
