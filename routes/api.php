@@ -9,6 +9,7 @@
  * @see bak/api/v1/index.php 遗留单入口对照
  */
 
+use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\Api\V1\ArticleController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BrowserDeviceAuthorizationController;
@@ -211,5 +212,18 @@ Route::prefix('v1')
             Route::post('articles/{article}/trash', [ArticleController::class, 'trash'])
                 ->whereNumber('article')
                 ->middleware(['api.scope:articles:write', 'throttle:60,1']);
+
+            // skills:* — Skill 集成 API（yao-meta-skill）
+            Route::prefix('skills')->name('api.v1.skills.')->group(function (): void {
+                Route::get('/', [SkillController::class, 'index'])
+                    ->middleware('api.scope:skills:read')
+                    ->name('index');
+                Route::post('/optimize', [SkillController::class, 'optimize'])
+                    ->middleware(['api.scope:skills:write', 'throttle:30,1'])
+                    ->name('optimize');
+                Route::post('/evaluate', [SkillController::class, 'evaluate'])
+                    ->middleware(['api.scope:skills:write', 'throttle:30,1'])
+                    ->name('evaluate');
+            });
         });
     });
