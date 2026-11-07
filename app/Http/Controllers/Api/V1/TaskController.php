@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\ApiException;
+use App\Http\Controllers\Concerns\ResolvesTenant;
 use App\Http\Requests\Api\StoreTaskRequest;
 use App\Http\Requests\Api\UpdateTaskRequest;
 use App\Models\Admin;
@@ -19,9 +20,11 @@ use Illuminate\Support\Facades\DB;
  * API v1 任务（tasks）生命周期：列表、创建、详情、更新、启停、入队、子 Job 列表。
  *
  * 读接口需 tasks:read，写接口需 tasks:write。部分写操作支持 X-Idempotency-Key 幂等。
+ * 知识库绑定通过 ResolvesTenant 提取租户 siteId，在 TaskLifecycleService 层校验归属。
  */
 class TaskController extends BaseApiController
 {
+    use ResolvesTenant;
     /**
      * 分页列出任务（新契约含 task_progress / queue_overview）。
      *
@@ -56,6 +59,7 @@ class TaskController extends BaseApiController
         $viewer = $this->executionAdmin($request);
         $data = $this->reviewBoundTaskData($request, $request->validated(), $tokens);
         $auth = $this->auth($request);
+        $siteId = $this->tenantId($request);
 
         $response = IdempotencyService::executeJson(
             $request,
@@ -65,6 +69,7 @@ class TaskController extends BaseApiController
                 auditAdminId: $auth->auditAdminId,
                 apiTokenId: (int) ($auth->token['id'] ?? 0),
                 viewer: $viewer,
+                siteId: $siteId,
             ), 201),
         );
 
@@ -91,6 +96,7 @@ class TaskController extends BaseApiController
         $viewer = $this->executionAdmin($request);
         $data = $this->reviewBoundTaskData($request, $request->validated(), $tokens, $task);
         $auth = $this->auth($request);
+        $siteId = $this->tenantId($request);
 
         $response = IdempotencyService::executeJson(
             $request,
@@ -102,6 +108,7 @@ class TaskController extends BaseApiController
                 auditAdminId: $auth->auditAdminId,
                 apiTokenId: (int) ($auth->token['id'] ?? 0),
                 viewer: $viewer,
+                siteId: $siteId,
             )),
         );
 

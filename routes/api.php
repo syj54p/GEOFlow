@@ -103,30 +103,32 @@ Route::prefix('v1')
             // catalog:read — 下拉元数据（模型、提示词、库、作者、分类等）
             Route::get('catalog', [CatalogController::class, 'show'])->middleware('api.scope:catalog:read');
 
-            // tasks:* — 任务 CRUD、启停、入队、子 Job 列表
-            Route::get('tasks', [TaskController::class, 'index'])->middleware('api.scope:tasks:read');
-            Route::post('tasks', [TaskController::class, 'store'])->middleware('api.scope:tasks:write');
-            Route::get('tasks/{task}', [TaskController::class, 'show'])
-                ->whereNumber('task')
-                ->middleware('api.scope:tasks:read');
-            Route::patch('tasks/{task}', [TaskController::class, 'update'])
-                ->whereNumber('task')
-                ->middleware('api.scope:tasks:write');
-            Route::delete('tasks/{task}', [TaskController::class, 'destroy'])
-                ->whereNumber('task')
-                ->middleware('api.scope:tasks:write');
-            Route::post('tasks/{task}/start', [TaskController::class, 'start'])
-                ->whereNumber('task')
-                ->middleware('api.scope:tasks:write');
-            Route::post('tasks/{task}/stop', [TaskController::class, 'stop'])
-                ->whereNumber('task')
-                ->middleware('api.scope:tasks:write');
-            Route::post('tasks/{task}/enqueue', [TaskController::class, 'enqueue'])
-                ->whereNumber('task')
-                ->middleware('api.scope:tasks:write');
-            Route::get('tasks/{task}/jobs', [TaskController::class, 'jobs'])
-                ->whereNumber('task')
-                ->middleware('api.scope:tasks:read');
+            // tasks:* — 任务 CRUD、启停、入队、子 Job 列表（知识库绑定需租户校验）
+            Route::middleware('api.tenant')->group(function (): void {
+                Route::get('tasks', [TaskController::class, 'index'])->middleware('api.scope:tasks:read');
+                Route::post('tasks', [TaskController::class, 'store'])->middleware('api.scope:tasks:write');
+                Route::get('tasks/{task}', [TaskController::class, 'show'])
+                    ->whereNumber('task')
+                    ->middleware('api.scope:tasks:read');
+                Route::patch('tasks/{task}', [TaskController::class, 'update'])
+                    ->whereNumber('task')
+                    ->middleware('api.scope:tasks:write');
+                Route::delete('tasks/{task}', [TaskController::class, 'destroy'])
+                    ->whereNumber('task')
+                    ->middleware('api.scope:tasks:write');
+                Route::post('tasks/{task}/start', [TaskController::class, 'start'])
+                    ->whereNumber('task')
+                    ->middleware('api.scope:tasks:write');
+                Route::post('tasks/{task}/stop', [TaskController::class, 'stop'])
+                    ->whereNumber('task')
+                    ->middleware('api.scope:tasks:write');
+                Route::post('tasks/{task}/enqueue', [TaskController::class, 'enqueue'])
+                    ->whereNumber('task')
+                    ->middleware('api.scope:tasks:write');
+                Route::get('tasks/{task}/jobs', [TaskController::class, 'jobs'])
+                    ->whereNumber('task')
+                    ->middleware('api.scope:tasks:read');
+            });
 
             // jobs:read — 单条 task_runs 执行记录
             Route::get('jobs/{job}', [JobController::class, 'show'])

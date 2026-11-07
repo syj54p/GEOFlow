@@ -75,7 +75,9 @@ class TaskLifecycleService
         int $auditAdminId,
         int $apiTokenId,
         Admin $viewer,
+        ?int $siteId = null,
     ): array {
+        $this->assertKnowledgeBasesTenantVisible($data['knowledge_base_ids'] ?? [], $siteId);
         $defaultedReview = ($data['content_type'] ?? 'article') === 'article' && ! array_key_exists('need_review', $data);
         $task = $this->createTask($data, $auditAdminId, $apiTokenId, $viewer);
         $task['compatibility'] = [
@@ -101,7 +103,10 @@ class TaskLifecycleService
         int $auditAdminId,
         int $apiTokenId,
         Admin $viewer,
+        ?int $siteId = null,
     ): array {
+        $this->assertKnowledgeBasesTenantVisible($data['knowledge_base_ids'] ?? [], $siteId);
+
         return $this->updateTask(
             $taskId,
             $data,
@@ -1946,6 +1951,41 @@ class TaskLifecycleService
         }
 
         return $ids->all();
+    }
+
+    /**
+     * 校验知识库 ID 列表对租户可见（siteId=null 表示超管全局视图，不做限制）。
+     *
+     * @param  list<int>|list<mixed>  $knowledgeBaseIds
+     */
+    private function assertKnowledgeBasesTenantVisible(array $knowledgeBaseIds, ?int $siteId): void
+    {
+        if ($siteId === null || $knowledgeBaseIds === []) {
+            return;
+        }
+
+        $ids = collect($knowledgeBaseIds)
+            ->map(static fn ($id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        $visibleCount = KnowledgeBase::query()
+            ->visibleTo($siteId)
+            ->whereIn('id', $ids->all())
+            ->count();
+
+        if ($visibleCount < $ids->count()) {
+            throw new ApiException(
+                'knowledge_base_tenant_mismatch',
+                '绑定的知识库包含当前租户不可见的条目',
+                422,
+            );
+        }
     }
 
     /**
