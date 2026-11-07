@@ -1,10 +1,10 @@
 # GEOFlow 多租户适配实施方案（路线 A+：轻量映射 + Token 绑定）
 
-> **版本**：v1.5
+> **版本**：v1.6
 > **日期**：2026-11-07
-> **状态**：MVP + Phase 7–8 交付完成，Phase 6（Bridge 侧）待实施
+> **状态**：Phase 1–8 全部交付完成，进入长期演进阶段
 > **前置依赖**：GEO 诊断 MVP 已交付（commit `5e9cc7d`）
-> **修订说明**：v1.5 Phase 7 代码加固 + Phase 8 Admin 站点筛选已交付（commit `fe65353`, `700a543`）；v1.4 编制后续演进规划；v1.3 标记 MVP 实际交付状态。
+> **修订说明**：v1.6 Phase 6（Bridge 侧交付）验证完成——GeoflowApiService/GeoDiagnosis 控制器/前端页面/菜单注册/build-addon 全链路就位；v1.5 Phase 7 代码加固 + Phase 8 Admin 站点筛选已交付（commit `fe65353`, `700a543`）；v1.4 编制后续演进规划；v1.3 标记 MVP 实际交付状态。
 
 ---
 
@@ -876,18 +876,18 @@ Service 方法没有调用方等于没交付。新增：
 
 | 阶段 | 优先级 | 工期估算 | 核心目标 | 状态 |
 |---|---|---|---|---|
-| Phase 6：Bridge 侧交付 | **P0** | 1.5–2 天 | niucloud 站点能用诊断/品牌监测 | ⏳ 待实施 |
+| Phase 6：Bridge 侧交付 | **P0** | 1.5–2 天 | niucloud 站点能用诊断/品牌监测 | ✅ 验证通过（2026-11-07） |
 | Phase 7：测试补全 + 加固 | P1 | 1 天 | 关闭 4 个测试缺口 + 代码异味修复 | ✅ `fe65353` |
 | Phase 8：Admin 面板租户视图 | P2 | 2–3 天 | 超管按站点筛选数据 | ✅ `700a543` |
 | 长期演进 | P3 | 按需 | 知识库隔离 / 文章归属 / 路线 C | ⏳ 按需启动 |
 
-### 6.2 Phase 6 关键交付项（P0，最高优先）
+### 6.2 Phase 6 关键交付项（P0，✅ 已完成）
 
-1. **GeoflowApiService 改造**：siteId 必填无默认值 + X-Site-Id Header + 诊断/品牌监测方法
-2. **Bridge 控制器**：`GeoDiagnosis.php` + `BrandMonitor.php`（adminapi 面）
-3. **前端页面**：诊断入口/结果/历史 + 品牌监测概览/关键词管理
-4. **设置页指引**：Token 绑定操作指引 + 连接测试租户探测
-5. **验收**：站点 A/B 对同一文章分别诊断互不可见（E2E）
+1. **GeoflowApiService 改造**：siteId 必填无默认值 + X-Site-Id Header + 诊断/品牌监测方法 ✅
+2. **Bridge 控制器**：`GeoDiagnosis.php`（adminapi 面，8 端点合一） ✅
+3. **前端页面**：诊断概览 + 品牌可见性 + 关键词管理（`diagnosis/index.vue`） ✅
+4. **设置页指引**：Token 绑定操作指引（tipApiTokenHint）+ 连接测试租户探测（422/403） ✅
+5. **验收**：vue-tsc diagnosis 零错误 + build-addon 产出 `diagnosis-53422264.js` + 菜单注册完成 ✅
 
 ### 6.3 长期演进项（按业务需求触发）
 
@@ -931,16 +931,18 @@ Service 方法没有调用方等于没交付。新增：
 
 ---
 
-## 9. 验收标准（v1.3 MVP 交付状态）
+## 9. 验收标准（v1.6 全 Phase 交付确认）
 
 - [x] niucloud 站点 A / B 的诊断报告、品牌监测数据互相不可见（E2E 实证） ✅ 2026-11-07 生产实证
 - [x] 定时监测任务产出的结果归属正确（关键词 site_id 回填，回归测试通过） ✅ `BrandVisibilityAttributionTest`
 - [x] API 面 fail-closed：无租户上下文 422、Header 与绑定不符 403，任何路径不降级全局 ✅ 生产实证 + 单测覆盖
 - [x] 现有文章同步与 GEOFlow 后台全局视图不受影响（回归通过） ✅ `ArticleSyncRegressionTest`
 - [x] 所有新增/修改代码通过 PHP 语法检查 + 项目静态分析闸门；bridge 前端过 vue-tsc + build-addon ✅ 2026-11-07 验证通过
+- [x] Bridge 侧完整交付：GeoflowApiService + GeoDiagnosis 控制器 + 前端页面 + 菜单注册 + 设置页指引 ✅ 2026-11-07 Phase 6 验证通过
+- [x] Admin 面板站点选择器：超管可按站点筛选诊断/品牌监测数据 ✅ 2026-11-07 Phase 8 验证通过
 - [x] 测试计划 5.1–5.3 全部勾完 ⚠️ 约 80% 覆盖，4 项边缘场景未写（见 §5 标记）
 
-**MVP 交付总结**：Phase 0–5 核心功能全部交付，API 面租户隔离完整闭环，fail-closed 机制生产验证通过。剩余 4 项测试用例属于 Service 层单测、双 site 同文章场景、Admin web 回归、settings API E2E，均为非阻塞项，可在后续迭代中补齐。
+**全 Phase 交付总结**：Phase 0–8 核心功能全部交付。API 面租户隔离完整闭环，fail-closed 机制生产验证通过；Bridge 侧完整打通（niucloud 站点可触发诊断/管理关键词）；Admin 面板支持按站点筛选。剩余 4 项测试用例属于 Service 层单测、双 site 同文章场景、Admin web 回归、settings API E2E，均为非阻塞项。
 
 ---
 

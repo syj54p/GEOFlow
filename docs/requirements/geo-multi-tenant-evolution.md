@@ -1,15 +1,15 @@
 # GEOFlow 多租户适配 — 后续演进规划
 
 > **日期**：2026-11-07  
-> **前置状态**：MVP（Phase 0–5）已交付，Phase 7–8 已交付  
-> **当前状态**：GEOFlow 侧全链路完成（API 租户隔离 + 代码加固 + Admin 站点筛选），Bridge 侧待交付
+> **前置状态**：MVP（Phase 0–5）已交付，Phase 6–8 已交付  
+> **当前状态**：全部 8 个 Phase 完成，多租户适配闭环
 
 ---
 
 ## 演进路线总览
 
 ```
-Phase 6（P0，1.5–2 天）   Bridge 侧交付 → 租户能用                    ⏳ 待实施
+Phase 6（P0，1.5–2 天）   Bridge 侧交付 → 租户能用                    ✅ 已完成 (2026-11-07 验证通过)
 Phase 7（P1，1 天）        测试补全 + 代码加固 → 质量闭环                ✅ 已完成 (commit fe65353)
 Phase 8（P2，2–3 天）      Admin 面板租户视图 → 超管可按站点查看         ✅ 已完成 (commit 700a543)
 长期演进（P3，按需）        知识库隔离 / 文章归属 / 路线 C                ⏳ 按需启动
@@ -17,9 +17,19 @@ Phase 8（P2，2–3 天）      Admin 面板租户视图 → 超管可按站点
 
 ---
 
-## Phase 6：Bridge 侧交付（niucloud df_geo_bridge）
+## Phase 6：Bridge 侧交付（niucloud df_geo_bridge）— ✅ 已完成
 
 **目标**：niucloud 站点管理员能在后台触发 GEO 诊断、查看品牌监测数据，完整打通多租户链路。
+
+**交付确认（2026-11-07）**：
+- ✅ GeoflowApiService：siteId 必填 + X-Site-Id Header + 8 个诊断/品牌方法
+- ✅ GeoDiagnosis 控制器：8 端点合一（run/latest/history/dashboard/brandDashboard/brandKeywords/addBrandKeyword/removeBrandKeyword）
+- ✅ 前端页面：`diagnosis/index.vue` 含概览卡片 + 品牌可见性表 + 关键词管理
+- ✅ API 模块：`diagnosis.ts` 完整类型定义
+- ✅ 语言包：`diagnosis.index.json` 70 个 key
+- ✅ 菜单注册：`admin.php` 「GEO 诊断」+ 5 个子权限
+- ✅ 设置页：token 绑定指引 + 连接测试租户探测（422/403）
+- ✅ 构建验证：vue-tsc diagnosis 零错误 + build-addon 产出 `diagnosis-53422264.js`
 
 ### 6.1 GeoflowApiService 改造
 
@@ -836,14 +846,14 @@ Route::get('/admin/api/sites', function () {
 
 ## 附录：演进优先级与工期估算
 
-| 阶段 | 优先级 | 工期 | 阻塞项 | 交付物 |
-|---|---|---|---|---|
-| Phase 6 | **P0** | 1.5–2 天 | 无 | Bridge 侧完整交付，租户能用 |
-| Phase 7 | P1 | 1 天 | Phase 6 | 测试补全 + 代码加固 |
-| Phase 8 | P2 | 2–3 天 | Phase 7 | Admin 面板租户视图 |
-| 长期演进 | P3 | 按需 | 业务需求驱动 | 知识库隔离 / 文章归属 / 扇出调度 / 路线 C |
+| 阶段 | 优先级 | 工期 | 阻塞项 | 交付物 | 状态 |
+|---|---|---|---|---|---|
+| Phase 6 | **P0** | 1.5–2 天 | 无 | Bridge 侧完整交付，租户能用 | ✅ 已完成 (2026-11-07) |
+| Phase 7 | P1 | 1 天 | Phase 6 | 测试补全 + 代码加固 | ✅ 已完成 (commit fe65353) |
+| Phase 8 | P2 | 2–3 天 | Phase 7 | Admin 面板租户视图 | ✅ 已完成 (commit 700a543) |
+| 长期演进 | P3 | 按需 | 业务需求驱动 | 知识库隔离 / 文章归属 / 扇出调度 / 路线 C | ⏳ 按需启动 |
 
-**建议执行顺序**：Phase 6 → Phase 7 → Phase 8，长期演进按业务需求插入。
+**Phase 1–8 已全部交付**。后续按业务需求从长期演进项中选取启动。
 
 ---
 
