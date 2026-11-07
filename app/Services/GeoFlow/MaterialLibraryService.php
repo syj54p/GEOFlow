@@ -147,6 +147,7 @@ class MaterialLibraryService
     {
         $type = $this->normalizeType($type);
         $row = $this->findMaterial($type, $id, $siteId);
+        $this->assertTenantWritable($type, $row, $siteId);
 
         DB::transaction(function () use ($type, $row, $data, $siteId): void {
             match ($type) {
@@ -170,6 +171,7 @@ class MaterialLibraryService
     {
         $type = $this->normalizeType($type);
         $row = $this->findMaterial($type, $id, $siteId);
+        $this->assertTenantWritable($type, $row, $siteId);
         $imageFilePaths = [];
         $knowledgeFilePaths = [];
 
@@ -542,6 +544,21 @@ class MaterialLibraryService
     private function freshMaterial(string $type, int $id, ?int $siteId = null): Model
     {
         return $this->findMaterial($type, $id, $siteId);
+    }
+
+    /**
+     * 租户上下文下禁止写全局知识库（site_id IS NULL）。
+     * 超管（$siteId=null）不受限制。
+     */
+    private function assertTenantWritable(string $type, Model $row, ?int $siteId): void
+    {
+        if ($type === 'knowledge-bases' && $siteId !== null && $row->site_id === null) {
+            throw new ApiException(
+                'global_knowledge_readonly_for_tenant',
+                '全局知识库不允许租户修改或删除',
+                403,
+            );
+        }
     }
 
     /**

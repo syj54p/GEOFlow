@@ -1974,16 +1974,25 @@ class TaskLifecycleService
             return;
         }
 
-        $visibleCount = KnowledgeBase::query()
+        $visibleIds = KnowledgeBase::query()
             ->visibleTo($siteId)
             ->whereIn('id', $ids->all())
-            ->count();
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
 
-        if ($visibleCount < $ids->count()) {
+        $invisibleIds = array_values(array_diff($ids->all(), $visibleIds));
+
+        if ($invisibleIds !== []) {
             throw new ApiException(
                 'knowledge_base_tenant_mismatch',
                 '绑定的知识库包含当前租户不可见的条目',
                 422,
+                [
+                    'invisible_knowledge_base_ids' => $invisibleIds,
+                    'requested_count' => $ids->count(),
+                    'visible_count' => count($visibleIds),
+                ],
             );
         }
     }
