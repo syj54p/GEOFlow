@@ -454,6 +454,7 @@ class KnowledgeBaseController extends Controller
                 'chunk_source_hash',
                 'chunk_synced_at',
                 'content',
+                'site_id',
                 'created_at',
                 'updated_at',
             ])
@@ -481,6 +482,7 @@ class KnowledgeBaseController extends Controller
                 'chunk_sync_status' => (string) ($knowledgeBase->chunk_sync_status ?? 'idle'),
                 'chunk_sync_error' => trim((string) ($knowledgeBase->chunk_sync_error ?? '')),
                 'chunk_synced_at' => $knowledgeBase->chunk_synced_at?->format('Y-m-d H:i:s'),
+                'site_id' => $knowledgeBase->site_id !== null ? (int) $knowledgeBase->site_id : null,
                 'created_at' => $knowledgeBase->created_at?->format('Y-m-d H:i:s'),
                 'updated_at' => $knowledgeBase->updated_at?->format('Y-m-d H:i:s'),
                 'is_system' => $isSystemKnowledge,
