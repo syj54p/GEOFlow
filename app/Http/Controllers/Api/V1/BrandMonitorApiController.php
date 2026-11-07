@@ -114,7 +114,7 @@ class BrandMonitorApiController extends BaseApiController
 
         $keywords = $this->keywordManager->getKeywords($siteId);
 
-        return $this->success($request, $keywords);
+        return $this->success($request, $keywords->toArray());
     }
 
     /**
@@ -130,7 +130,7 @@ class BrandMonitorApiController extends BaseApiController
 
         $keyword = $this->keywordManager->addKeyword($validated['keyword'], $siteId);
 
-        return $this->success($request, $keyword, 201);
+        return $this->success($request, $keyword->toArray(), 201);
     }
 
     /**
@@ -175,7 +175,7 @@ class BrandMonitorApiController extends BaseApiController
             })
             ->get();
 
-        return $this->success($request, $platforms);
+        return $this->success($request, $platforms->toArray());
     }
 
     /**
@@ -209,6 +209,6 @@ class BrandMonitorApiController extends BaseApiController
 
         $platform->update($validated);
 
-        return $this->success($request, $platform->refresh());
+        return $this->success($request, $platform->refresh()->toArray());
     }
 }
