@@ -1,10 +1,10 @@
 # GEOFlow 多租户适配实施方案（路线 A+：轻量映射 + Token 绑定）
 
-> **版本**：v1.7
+> **版本**：v1.8
 > **日期**：2026-11-08
-> **状态**：Phase 1–8 全部交付完成；知识库隔离 K1–K7 全部交付完成
+> **状态**：Phase 1–8 全部交付完成；知识库隔离 K1–K7 全部交付完成；代码审查 P0/P1/P2 修复完成
 > **前置依赖**：GEO 诊断 MVP 已交付（commit `5e9cc7d`）
-> **修订说明**：v1.7 知识库隔离 K1-K7 全链路交付——K1 迁移+Model、K2 materials API 隔离、K3 检索链路 visibleTo 防线、K4 tasks API 隔离+KB 绑定校验、K5 Admin Web 暴露 site_id、K6 Bridge 侧确认合规、K7 生产验证通过。
+> **修订说明**：v1.8 代码审查三级别修复——P0 items 系列操作补传 siteId 做租户归属校验、P1 update/delete 加 assertTenantWritable 全局知识库写保护、P2 assertKnowledgeBasesTenantVisible 错误信息增强（返回不可见 KB ID 列表）。
 
 ---
 

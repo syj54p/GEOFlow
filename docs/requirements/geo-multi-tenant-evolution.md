@@ -2,7 +2,7 @@
 
 > **日期**：2026-11-08  
 > **前置状态**：MVP（Phase 0–5）已交付，Phase 6–8 已交付，知识库隔离 K1–K7 已交付  
-> **当前状态**：全部 8 个 Phase + 知识库隔离 7 步完成，多租户适配深度闭环
+> **当前状态**：全部 8 个 Phase + 知识库隔离 7 步 + 代码审查 P0/P1/P2 修复完成，多租户适配深度闭环
 
 ---
 
@@ -13,6 +13,7 @@ Phase 6（P0，1.5–2 天）   Bridge 侧交付 → 租户能用               
 Phase 7（P1，1 天）        测试补全 + 代码加固 → 质量闭环                ✅ 已完成 (commit fe65353)
 Phase 8（P2，2–3 天）      Admin 面板租户视图 → 超管可按站点查看         ✅ 已完成 (commit 700a543)
 K1-K7（P3，1 天）          知识库隔离 → 租户数据深度隔离                  ✅ 已完成 (2026-11-08)
+代码审查修复               P0 items 补传 siteId + P1 全局 KB 写保护      ✅ 已完成 (commit f64a653)
 长期演进（P4，按需）        文章归属 / 路线 C / 更多资源隔离              ⏳ 按需启动
 ```
 
@@ -872,6 +873,48 @@ Route::get('/admin/api/sites', function () {
 
 ---
 
+## 代码审查修复 P0/P1/P2 — ✅ 已完成 (2026-11-08)
+
+**背景**：K1-K7 交付后对 Phase 6-8 改动做代码审查，发现三个级别的问题。
+
+### P0：items 系列操作缺失 siteId 传递
+
+**问题**：MaterialController 的 `items`/`storeItem`/`destroyItems` 三个方法未将 `tenantId` 传递给 Service 层，导致租户可通过 items 子资源操作绕过归属校验。
+
+**修复**（commit `0d60398`）：
+- `MaterialController`：items/storeItem/destroyItems 补传 `$this->tenantId($request)`
+- `MaterialLibraryService`：`listItems`/`createItem`/`deleteItems`/`withLegacyImagePathLock`/`withUploadedImagePathLock`/`createUploadedImageItem` 统一接受 `?int $siteId = null`，在 `findMaterial` 内执行 visibleTo 校验
+
+**涉及文件**：
+- `app/Http/Controllers/Api/V1/MaterialController.php`
+- `app/Services/GeoFlow/MaterialLibraryService.php`
+
+### P1：全局知识库写保护缺失
+
+**问题**：`update()` 和 `delete()` 通过 `visibleTo` scope 查找记录，语义为 `WHERE site_id = $siteId OR site_id IS NULL`——租户能看到全局知识库（正确），但也能修改/删除全局知识库（错误）。
+
+**修复**（commit `f64a653`）：
+- 新增 `assertTenantWritable()` 私有方法：当 `$type === 'knowledge-bases'` 且 `$siteId !== null`（租户上下文）且 `$row->site_id === null`（全局知识库）时，抛 403
+- `update()` 和 `delete()` 在 `findMaterial` 之后调用 `assertTenantWritable`
+- 超管（`siteId = null`）不受影响
+
+**涉及文件**：
+- `app/Services/GeoFlow/MaterialLibraryService.php`
+
+### P2：租户校验错误信息不够具体
+
+**问题**：`assertKnowledgeBasesTenantVisible()` 只返回通用错误"绑定的知识库包含当前租户不可见的条目"，无法定位具体是哪些 KB ID 有问题。
+
+**修复**（commit `f64a653`）：
+- 改用 `pluck('id')` 取可见 ID 列表，`array_diff` 算出不可见 ID
+- 422 响应体增加 `invisible_knowledge_base_ids`（不可见 ID 列表）、`requested_count`、`visible_count` 字段
+- 前端可直接高亮有问题的条目，调试更方便
+
+**涉及文件**：
+- `app/Services/GeoFlow/TaskLifecycleService.php`
+
+---
+
 ## 附录：演进优先级与工期估算
 
 | 阶段 | 优先级 | 工期 | 阻塞项 | 交付物 | 状态 |
@@ -880,9 +923,10 @@ Route::get('/admin/api/sites', function () {
 | Phase 7 | P1 | 1 天 | Phase 6 | 测试补全 + 代码加固 | ✅ 已完成 (commit fe65353) |
 | Phase 8 | P2 | 2–3 天 | Phase 7 | Admin 面板租户视图 | ✅ 已完成 (commit 700a543) |
 | K1-K7 | **P3** | 1 天 | Phase 8 | 知识库隔离全链路 | ✅ 已完成 (2026-11-08) |
+| 代码审查修复 | **P3** | 0.5 天 | K1-K7 | P0 items siteId + P1 全局 KB 写保护 + P2 错误信息 | ✅ 已完成 (commit f64a653) |
 | 长期演进 | P4 | 按需 | 业务需求驱动 | 文章归属 / 扇出调度 / 路线 C | ⏳ 按需启动 |
 
-**Phase 1–8 + K1-K7 已全部交付**。后续按业务需求从长期演进项中选取启动。
+**Phase 1–8 + K1-K7 + 代码审查修复已全部交付**。后续按业务需求从长期演进项中选取启动。
 
 ---
 
