@@ -9,7 +9,8 @@
                 <h1 class="mt-1 text-2xl font-bold text-gray-900">诊断概览</h1>
                 <p class="mt-1 text-sm text-gray-500">一站式 GEO 运营中心，监控内容就绪度与品牌 AI 可见度。</p>
             </div>
-            <div class="flex shrink-0 space-x-3">
+            <div class="flex shrink-0 items-center gap-3">
+                <x-admin.site-selector :sites="$sites ?? []" :selected-site-id="$selectedSiteId ?? null" />
                 <a href="{{ route('admin.brand-monitor.index') }}"
                     class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                     <i data-lucide="radar" class="w-4 h-4 mr-2"></i>

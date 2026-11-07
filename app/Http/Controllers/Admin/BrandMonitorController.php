@@ -30,16 +30,26 @@ class BrandMonitorController extends Controller
     /**
      * 品牌监测页面（3 个标签页）
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $platforms = BrandPlatform::query()->get();
-        $keywords = $this->keywordManager->getKeywords();
+        $siteId = $request->query('site_id') !== null ? (int) $request->query('site_id') : null;
+        $platforms = BrandPlatform::query()
+            ->when($siteId !== null, fn ($q) => $q->where(function ($q2) use ($siteId) {
+                $q2->whereNull('site_id')->orWhere('site_id', $siteId);
+            }))
+            ->get();
+        $keywords = $this->keywordManager->getKeywords($siteId);
+
+        // 获取已知站点列表（复用诊断 orchestrator 的方法）
+        $sites = app(\App\Services\GeoFlow\GeoDiagnosis\GeoDiagnosisOrchestrator::class)->getKnownSites();
 
         return view('admin.geo-diagnosis.brand-monitor', [
             'pageTitle' => '品牌监测',
             'activeMenu' => 'geo-diagnosis',
             'platforms' => $platforms,
             'keywords' => $keywords,
+            'sites' => $sites,
+            'selectedSiteId' => $siteId,
         ]);
     }
 
@@ -50,6 +60,7 @@ class BrandMonitorController extends Controller
      */
     public function visibility(Request $request): JsonResponse
     {
+        $siteId = $request->query('site_id') !== null ? (int) $request->query('site_id') : null;
         $platformIds = $request->input('platform_ids', []);
         $keywordIds = $request->input('keyword_ids', []);
 
@@ -63,6 +74,7 @@ class BrandMonitorController extends Controller
         $data = $this->orchestrator->getVisibilityData(
             !empty($platformIds) ? array_map('intval', $platformIds) : null,
             !empty($keywordIds) ? array_map('intval', $keywordIds) : null,
+            $siteId,
         );
 
         return response()->json(['data' => $data]);
@@ -88,8 +100,9 @@ class BrandMonitorController extends Controller
      */
     public function sources(Request $request): JsonResponse
     {
+        $siteId = $request->query('site_id') !== null ? (int) $request->query('site_id') : null;
         $period = $request->input('period', '7d');
-        $data = $this->orchestrator->getSourceAnalysis($period);
+        $data = $this->orchestrator->getSourceAnalysis($period, $siteId);
 
         return response()->json(['data' => $data]);
     }
@@ -101,8 +114,9 @@ class BrandMonitorController extends Controller
      */
     public function sentiment(Request $request): JsonResponse
     {
+        $siteId = $request->query('site_id') !== null ? (int) $request->query('site_id') : null;
         $period = $request->input('period', '7d');
-        $data = $this->orchestrator->getSentimentAnalysis($period);
+        $data = $this->orchestrator->getSentimentAnalysis($period, $siteId);
 
         return response()->json(['data' => $data]);
     }
@@ -112,9 +126,10 @@ class BrandMonitorController extends Controller
     /**
      * 获取关键词列表
      */
-    public function keywords(): JsonResponse
+    public function keywords(Request $request): JsonResponse
     {
-        $keywords = $this->keywordManager->getKeywords();
+        $siteId = $request->query('site_id') !== null ? (int) $request->query('site_id') : null;
+        $keywords = $this->keywordManager->getKeywords($siteId);
 
         return response()->json(['data' => $keywords]);
     }
@@ -152,9 +167,14 @@ class BrandMonitorController extends Controller
     /**
      * 获取平台列表
      */
-    public function platforms(): JsonResponse
+    public function platforms(Request $request): JsonResponse
     {
-        $platforms = BrandPlatform::query()->get();
+        $siteId = $request->query('site_id') !== null ? (int) $request->query('site_id') : null;
+        $platforms = BrandPlatform::query()
+            ->when($siteId !== null, fn ($q) => $q->where(function ($q2) use ($siteId) {
+                $q2->whereNull('site_id')->orWhere('site_id', $siteId);
+            }))
+            ->get();
 
         return response()->json(['data' => $platforms]);
     }

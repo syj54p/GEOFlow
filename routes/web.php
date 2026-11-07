@@ -9,7 +9,6 @@ use App\Http\Controllers\Admin\AdminActivityLogController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminRecentActivityController;
 use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\Admin\AdminWelcomeController;
 use App\Http\Controllers\Admin\AiModelController;
 use App\Http\Controllers\Admin\AiPromptController;
 use App\Http\Controllers\Admin\AiPromptTestController;
@@ -157,7 +156,6 @@ Route::prefix($adminPrefix)->name('admin.')->middleware(['admin.locale'])->group
         require __DIR__.'/admin-topics.php';
         // 会话与首页
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
-        Route::post('welcome/dismiss', [AdminWelcomeController::class, 'dismiss'])->name('welcome.dismiss');
         Route::middleware('admin.ui-v3')->group(function (): void {
             Route::get('recent', AdminRecentActivityController::class)
                 ->middleware('throttle:admin-recent-read')
@@ -495,6 +493,9 @@ Route::prefix($adminPrefix)->name('admin.')->middleware(['admin.locale'])->group
             Route::get('dashboard', [GeoDiagnosisDashboardController::class, 'dashboard'])
                 ->middleware('throttle:120,1')
                 ->name('dashboard');
+            Route::get('sites', [GeoDiagnosisDashboardController::class, 'sites'])
+                ->middleware('throttle:120,1')
+                ->name('sites');
 
             // 诊断设置
             Route::get('settings', [GeoDiagnosisSettingsController::class, 'index'])->name('settings.index');

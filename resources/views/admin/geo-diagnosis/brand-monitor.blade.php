@@ -9,7 +9,8 @@
                 <h1 class="mt-1 text-2xl font-bold text-gray-900">品牌监测</h1>
                 <p class="mt-1 text-sm text-gray-500">监控品牌在主流 AI 平台的可见度、信源引用和舆情评价。</p>
             </div>
-            <div class="flex shrink-0 space-x-3">
+            <div class="flex shrink-0 items-center gap-3">
+                <x-admin.site-selector :sites="$sites ?? []" :selected-site-id="$selectedSiteId ?? null" />
                 <a href="{{ route('admin.geo-diagnosis.index') }}"
                     class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                     <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
@@ -291,6 +292,7 @@
             activeTab: 0,
             loading: false,
             newKeyword: '',
+            siteId: {{ $selectedSiteId ?? 'null' }},
             tabs: [
                 { label: 'AI 可见性' },
                 { label: '信源检测' },
@@ -306,9 +308,16 @@
                 this.loadSentiment();
             },
 
+            buildUrl(base, params = {}) {
+                const url = new URL(base, window.location.origin);
+                if (this.siteId) url.searchParams.set('site_id', this.siteId);
+                Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+                return url.toString();
+            },
+
             async loadVisibility() {
                 try {
-                    const res = await fetch('{{ route("admin.brand-monitor.visibility") }}');
+                    const res = await fetch(this.buildUrl('{{ route("admin.brand-monitor.visibility") }}'));
                     const json = await res.json();
                     this.visibilityData = json.data || [];
                 } catch (e) { console.error('Load visibility failed', e); }
@@ -316,7 +325,7 @@
 
             async loadSources() {
                 try {
-                    const res = await fetch('{{ route("admin.brand-monitor.sources") }}');
+                    const res = await fetch(this.buildUrl('{{ route("admin.brand-monitor.sources") }}'));
                     const json = await res.json();
                     this.sourceData = json.data || {};
                 } catch (e) { console.error('Load sources failed', e); }
@@ -324,7 +333,7 @@
 
             async loadSentiment() {
                 try {
-                    const res = await fetch('{{ route("admin.brand-monitor.sentiment") }}');
+                    const res = await fetch(this.buildUrl('{{ route("admin.brand-monitor.sentiment") }}'));
                     const json = await res.json();
                     this.sentimentData = json.data || {};
                 } catch (e) { console.error('Load sentiment failed', e); }

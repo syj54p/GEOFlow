@@ -183,6 +183,7 @@ final class GeoDiagnosisOrchestrator
         $avgScore = (int) round(
             GeoDiagnosisRun::query()
                 ->completed()
+                ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
                 ->selectRaw('AVG(total_score) as avg_score')
                 ->value('avg_score') ?? 0
         );
@@ -191,6 +192,7 @@ final class GeoDiagnosisOrchestrator
         $previousAvg = (int) round(
             GeoDiagnosisRun::query()
                 ->completed()
+                ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
                 ->where('created_at', '<', now()->subDays(7))
                 ->selectRaw('AVG(total_score) as avg_score')
                 ->value('avg_score') ?? 0
@@ -199,21 +201,35 @@ final class GeoDiagnosisOrchestrator
 
         // 待优化文章数（分数 < 60）
         $articlesNeedingOptimization = Article::query()
-            ->whereHas('latestGeoDiagnosisRun', function ($q) {
+            ->whereHas('latestGeoDiagnosisRun', function ($q) use ($siteId) {
                 $q->where('total_score', '<', 60);
+                if ($siteId !== null) {
+                    $q->where('site_id', $siteId);
+                }
             })
             ->count();
 
         // 低分文章数（分数 < 40）
         $lowScoreArticles = Article::query()
-            ->whereHas('latestGeoDiagnosisRun', function ($q) {
+            ->whereHas('latestGeoDiagnosisRun', function ($q) use ($siteId) {
                 $q->where('total_score', '<', 40);
+                if ($siteId !== null) {
+                    $q->where('site_id', $siteId);
+                }
             })
             ->count();
 
         // 品牌监测相关数据
-        $activeKeywords = \App\Models\BrandKeyword::query()->active()->count();
-        $activePlatforms = \App\Models\BrandPlatform::query()->enabled()->count();
+        $activeKeywords = \App\Models\BrandKeyword::query()
+            ->active()
+            ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
+            ->count();
+        $activePlatforms = \App\Models\BrandPlatform::query()
+            ->enabled()
+            ->when($siteId !== null, fn ($q) => $q->where(function ($q2) use ($siteId) {
+                $q2->whereNull('site_id')->orWhere('site_id', $siteId);
+            }))
+            ->count();
 
         // 品牌可见度百分比
         $brandVisibilityPct = 0;
@@ -221,6 +237,7 @@ final class GeoDiagnosisOrchestrator
             $brandVisibilityPct = (int) round(
                 \App\Models\BrandMonitorResult::query()
                     ->inPeriod('7d')
+                    ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
                     ->selectRaw('AVG(visibility_score) as avg_vis')
                     ->value('avg_vis') ?? 0
             );
@@ -244,10 +261,14 @@ final class GeoDiagnosisOrchestrator
         // 各平台可见度快照
         $platformVisibility = \App\Models\BrandPlatform::query()
             ->enabled()
+            ->when($siteId !== null, fn ($q) => $q->where(function ($q2) use ($siteId) {
+                $q2->whereNull('site_id')->orWhere('site_id', $siteId);
+            }))
             ->get()
-            ->map(function ($platform) {
+            ->map(function ($platform) use ($siteId) {
                 $avgVis = $platform->monitorResults()
                     ->inPeriod('7d')
+                    ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
                     ->selectRaw('AVG(visibility_score) as avg_vis')
                     ->value('avg_vis');
                 return [
@@ -269,6 +290,38 @@ final class GeoDiagnosisOrchestrator
             'recent_activities' => $recentActivities,
             'platform_visibility' => $platformVisibility,
         ];
+    }
+
+    /**
+     * 获取已知站点列表（从诊断记录和关键词聚合）。
+     *
+     * @return array<int, array{id: int, name: string, run_count: int}>
+     */
+    public function getKnownSites(): array
+    {
+        // 从诊断记录聚合
+        $sitesFromRuns = GeoDiagnosisRun::query()
+            ->whereNotNull('site_id')
+            ->selectRaw('site_id, COUNT(*) as run_count')
+            ->groupBy('site_id')
+            ->pluck('run_count', 'site_id');
+
+        // 从关键词聚合
+        $sitesFromKeywords = \App\Models\BrandKeyword::query()
+            ->whereNotNull('site_id')
+            ->selectRaw('site_id, COUNT(*) as keyword_count')
+            ->groupBy('site_id')
+            ->pluck('keyword_count', 'site_id');
+
+        // 合并去重
+        $allSiteIds = $sitesFromRuns->keys()->merge($sitesFromKeywords->keys())->unique()->sort()->values();
+
+        return $allSiteIds->map(fn (int $siteId) => [
+            'id' => $siteId,
+            'name' => "站点 {$siteId}",
+            'run_count' => (int) ($sitesFromRuns[$siteId] ?? 0),
+            'keyword_count' => (int) ($sitesFromKeywords[$siteId] ?? 0),
+        ])->toArray();
     }
 
     /**
