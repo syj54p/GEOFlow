@@ -133,28 +133,30 @@ Route::prefix('v1')
                 ->whereNumber('job')
                 ->middleware('api.scope:jobs:read');
 
-            // materials:* — 后台素材库 CRUD 与库内条目管理
-            Route::get('materials', [MaterialController::class, 'summary'])->middleware('api.scope:materials:read');
-            Route::get('materials/{type}', [MaterialController::class, 'index'])->middleware('api.scope:materials:read');
-            Route::post('materials/{type}', [MaterialController::class, 'store'])->middleware('api.scope:materials:write');
-            Route::get('materials/{type}/{id}', [MaterialController::class, 'show'])
-                ->whereNumber('id')
-                ->middleware('api.scope:materials:read');
-            Route::patch('materials/{type}/{id}', [MaterialController::class, 'update'])
-                ->whereNumber('id')
-                ->middleware('api.scope:materials:write');
-            Route::delete('materials/{type}/{id}', [MaterialController::class, 'destroy'])
-                ->whereNumber('id')
-                ->middleware('api.scope:materials:write');
-            Route::get('materials/{type}/{id}/items', [MaterialController::class, 'items'])
-                ->whereNumber('id')
-                ->middleware('api.scope:materials:read');
-            Route::post('materials/{type}/{id}/items', [MaterialController::class, 'storeItem'])
-                ->whereNumber('id')
-                ->middleware('api.scope:materials:write');
-            Route::delete('materials/{type}/{id}/items', [MaterialController::class, 'destroyItems'])
-                ->whereNumber('id')
-                ->middleware('api.scope:materials:write');
+            // materials:* — 后台素材库 CRUD 与库内条目管理（知识库需租户隔离）
+            Route::middleware('api.tenant')->group(function (): void {
+                Route::get('materials', [MaterialController::class, 'summary'])->middleware('api.scope:materials:read');
+                Route::get('materials/{type}', [MaterialController::class, 'index'])->middleware('api.scope:materials:read');
+                Route::post('materials/{type}', [MaterialController::class, 'store'])->middleware('api.scope:materials:write');
+                Route::get('materials/{type}/{id}', [MaterialController::class, 'show'])
+                    ->whereNumber('id')
+                    ->middleware('api.scope:materials:read');
+                Route::patch('materials/{type}/{id}', [MaterialController::class, 'update'])
+                    ->whereNumber('id')
+                    ->middleware('api.scope:materials:write');
+                Route::delete('materials/{type}/{id}', [MaterialController::class, 'destroy'])
+                    ->whereNumber('id')
+                    ->middleware('api.scope:materials:write');
+                Route::get('materials/{type}/{id}/items', [MaterialController::class, 'items'])
+                    ->whereNumber('id')
+                    ->middleware('api.scope:materials:read');
+                Route::post('materials/{type}/{id}/items', [MaterialController::class, 'storeItem'])
+                    ->whereNumber('id')
+                    ->middleware('api.scope:materials:write');
+                Route::delete('materials/{type}/{id}/items', [MaterialController::class, 'destroyItems'])
+                    ->whereNumber('id')
+                    ->middleware('api.scope:materials:write');
+            });
 
             // articles:* — 文章 CRUD、审核、发布、软删
             Route::get('articles', [ArticleController::class, 'index'])->middleware('api.scope:articles:read');

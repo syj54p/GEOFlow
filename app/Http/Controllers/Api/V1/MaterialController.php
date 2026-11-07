@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Controllers\Concerns\ResolvesTenant;
 use App\Http\Requests\Api\StoreMaterialItemRequest;
 use App\Services\Api\IdempotencyService;
 use App\Services\GeoFlow\MaterialLibraryService;
@@ -13,15 +14,18 @@ use Illuminate\Http\Request;
  * API v1 素材库管理：分类、作者、关键词库、标题库、图片库、知识库。
  *
  * 读接口需 materials:read，写接口需 materials:write。写操作支持 X-Idempotency-Key。
+ * 知识库类型执行租户隔离（visibleTo scope），其余素材类型全局共享。
  */
 class MaterialController extends BaseApiController
 {
+    use ResolvesTenant;
+
     /**
      * 素材库类型摘要。
      */
     public function summary(Request $request, MaterialLibraryService $materials): JsonResponse
     {
-        return $this->success($request, $materials->summary());
+        return $this->success($request, $materials->summary($this->tenantId($request)));
     }
 
     /**
@@ -35,7 +39,8 @@ class MaterialController extends BaseApiController
             $type,
             $request->integer('page', 1),
             $request->integer('per_page', 20),
-            ['search' => is_string($search) ? trim($search) : '']
+            ['search' => is_string($search) ? trim($search) : ''],
+            $this->tenantId($request),
         ));
     }
 
@@ -44,10 +49,12 @@ class MaterialController extends BaseApiController
      */
     public function store(Request $request, string $type, MaterialLibraryService $materials): JsonResponse
     {
+        $siteId = $this->tenantId($request);
+
         return IdempotencyService::executeJson(
             $request,
             'POST /materials/{type}',
-            fn (): JsonResponse => $this->success($request, $materials->create($type, $request->all()), 201),
+            fn (): JsonResponse => $this->success($request, $materials->create($type, $request->all(), $siteId), 201),
         );
     }
 
@@ -56,7 +63,7 @@ class MaterialController extends BaseApiController
      */
     public function show(Request $request, string $type, int $id, MaterialLibraryService $materials): JsonResponse
     {
-        return $this->success($request, $materials->show($type, $id));
+        return $this->success($request, $materials->show($type, $id, $this->tenantId($request)));
     }
 
     /**
@@ -64,10 +71,12 @@ class MaterialController extends BaseApiController
      */
     public function update(Request $request, string $type, int $id, MaterialLibraryService $materials): JsonResponse
     {
+        $siteId = $this->tenantId($request);
+
         return IdempotencyService::executeJson(
             $request,
             'PATCH /materials/{type}/{id}',
-            fn (): JsonResponse => $this->success($request, $materials->update($type, $id, $request->all())),
+            fn (): JsonResponse => $this->success($request, $materials->update($type, $id, $request->all(), $siteId)),
         );
     }
 
@@ -76,7 +85,7 @@ class MaterialController extends BaseApiController
      */
     public function destroy(Request $request, string $type, int $id, MaterialLibraryService $materials): JsonResponse
     {
-        return $this->success($request, $materials->delete($type, $id));
+        return $this->success($request, $materials->delete($type, $id, $this->tenantId($request)));
     }
 
     /**

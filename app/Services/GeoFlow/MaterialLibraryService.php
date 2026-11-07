@@ -59,7 +59,7 @@ class MaterialLibraryService
     /**
      * @return array{types:list<array{type:string,count:int}>}
      */
-    public function summary(): array
+    public function summary(?int $siteId = null): array
     {
         return [
             'types' => [
@@ -68,7 +68,7 @@ class MaterialLibraryService
                 ['type' => 'keyword-libraries', 'count' => KeywordLibrary::query()->count()],
                 ['type' => 'title-libraries', 'count' => TitleLibrary::query()->count()],
                 ['type' => 'image-libraries', 'count' => ImageLibrary::query()->count()],
-                ['type' => 'knowledge-bases', 'count' => KnowledgeBase::query()->count()],
+                ['type' => 'knowledge-bases', 'count' => KnowledgeBase::query()->visibleTo($siteId)->count()],
             ],
         ];
     }
@@ -77,10 +77,10 @@ class MaterialLibraryService
      * @param  array<string,mixed>  $filters
      * @return array<string,mixed>
      */
-    public function list(string $type, int $page = 1, int $perPage = 20, array $filters = []): array
+    public function list(string $type, int $page = 1, int $perPage = 20, array $filters = [], ?int $siteId = null): array
     {
         $type = $this->normalizeType($type);
-        $query = $this->buildListQuery($type, includeFullKnowledgeContent: false);
+        $query = $this->buildListQuery($type, includeFullKnowledgeContent: false, siteId: $siteId);
         $search = trim((string) ($filters['search'] ?? ''));
         if ($search !== '') {
             $this->applySearch($query, $type, $search);
@@ -92,10 +92,10 @@ class MaterialLibraryService
     /**
      * @return array<string,mixed>
      */
-    public function show(string $type, int $id): array
+    public function show(string $type, int $id, ?int $siteId = null): array
     {
         $type = $this->normalizeType($type);
-        $row = $this->buildListQuery($type)->whereKey($id)->first();
+        $row = $this->buildListQuery($type, siteId: $siteId)->whereKey($id)->first();
         if (! $row) {
             throw new ApiException('material_not_found', '素材不存在', 404);
         }
@@ -110,11 +110,11 @@ class MaterialLibraryService
      * @param  array<string,mixed>  $data
      * @return array<string,mixed>
      */
-    public function create(string $type, array $data): array
+    public function create(string $type, array $data, ?int $siteId = null): array
     {
         $type = $this->normalizeType($type);
 
-        $row = DB::transaction(function () use ($type, $data): Model {
+        $row = DB::transaction(function () use ($type, $data, $siteId): Model {
             return match ($type) {
                 'categories' => $this->createCategory($data),
                 'authors' => Author::query()->create($this->normalizeAuthorPayload($data, false)),
@@ -129,13 +129,13 @@ class MaterialLibraryService
                     'image_count' => 0,
                     'used_task_count' => 0,
                 ]),
-                'knowledge-bases' => $this->createKnowledgeBase($data),
+                'knowledge-bases' => $this->createKnowledgeBase($data, $siteId),
             };
         });
 
         return [
             'type' => $type,
-            'item' => $this->serializeMaterial($type, $this->freshMaterial($type, (int) $row->getKey())),
+            'item' => $this->serializeMaterial($type, $this->freshMaterial($type, (int) $row->getKey(), $siteId)),
         ];
     }
 
@@ -143,33 +143,33 @@ class MaterialLibraryService
      * @param  array<string,mixed>  $data
      * @return array<string,mixed>
      */
-    public function update(string $type, int $id, array $data): array
+    public function update(string $type, int $id, array $data, ?int $siteId = null): array
     {
         $type = $this->normalizeType($type);
-        $row = $this->findMaterial($type, $id);
+        $row = $this->findMaterial($type, $id, $siteId);
 
-        DB::transaction(function () use ($type, $row, $data): void {
+        DB::transaction(function () use ($type, $row, $data, $siteId): void {
             match ($type) {
                 'categories' => $this->updateCategory($row, $data),
                 'authors' => $row->update($this->normalizeAuthorPayload($data, true)),
                 'keyword-libraries', 'title-libraries', 'image-libraries' => $row->update($this->normalizeBasicLibraryPayload($data, true)),
-                'knowledge-bases' => $this->updateKnowledgeBase($row, $data),
+                'knowledge-bases' => $this->updateKnowledgeBase($row, $data, $siteId),
             };
         });
 
         return [
             'type' => $type,
-            'item' => $this->serializeMaterial($type, $this->freshMaterial($type, (int) $row->getKey())),
+            'item' => $this->serializeMaterial($type, $this->freshMaterial($type, (int) $row->getKey(), $siteId)),
         ];
     }
 
     /**
      * @return array{id:int,type:string,deleted:bool,cleanup_failed_count:int}
      */
-    public function delete(string $type, int $id): array
+    public function delete(string $type, int $id, ?int $siteId = null): array
     {
         $type = $this->normalizeType($type);
-        $row = $this->findMaterial($type, $id);
+        $row = $this->findMaterial($type, $id, $siteId);
         $imageFilePaths = [];
         $knowledgeFilePaths = [];
 
@@ -406,7 +406,7 @@ class MaterialLibraryService
         return $type;
     }
 
-    private function buildListQuery(string $type, bool $includeFullKnowledgeContent = true): Builder
+    private function buildListQuery(string $type, bool $includeFullKnowledgeContent = true, ?int $siteId = null): Builder
     {
         return match ($type) {
             'categories' => Category::query()
@@ -438,6 +438,7 @@ class MaterialLibraryService
                 ->withSum('images as total_size', 'file_size')
                 ->orderByDesc('created_at'),
             'knowledge-bases' => KnowledgeBase::query()
+                ->visibleTo($siteId)
                 ->select([
                     'id',
                     'name',
@@ -450,6 +451,7 @@ class MaterialLibraryService
                     'usage_count',
                     'chunk_sync_status',
                     'chunk_sync_error',
+                    'site_id',
                     'created_at',
                     'updated_at',
                 ])
@@ -525,9 +527,9 @@ class MaterialLibraryService
         return $data;
     }
 
-    private function findMaterial(string $type, int $id): Model
+    private function findMaterial(string $type, int $id, ?int $siteId = null): Model
     {
-        $row = $this->buildListQuery($type)->whereKey($id)->first();
+        $row = $this->buildListQuery($type, siteId: $siteId)->whereKey($id)->first();
         if (! $row) {
             throw new ApiException('material_not_found', '素材不存在', 404);
         }
@@ -535,9 +537,9 @@ class MaterialLibraryService
         return $row;
     }
 
-    private function freshMaterial(string $type, int $id): Model
+    private function freshMaterial(string $type, int $id, ?int $siteId = null): Model
     {
-        return $this->findMaterial($type, $id);
+        return $this->findMaterial($type, $id, $siteId);
     }
 
     /**
@@ -623,6 +625,7 @@ class MaterialLibraryService
                 'chunk_sync_status' => (string) ($row->chunk_sync_status ?? 'idle'),
                 'chunk_sync_error' => (string) ($row->chunk_sync_error ?? ''),
                 'task_count' => (int) ($row->task_count ?? 0),
+                'site_id' => $row->site_id !== null ? (int) $row->site_id : null,
                 'created_at' => $this->formatDate($row->created_at ?? null),
                 'updated_at' => $this->formatDate($row->updated_at ?? null),
             ],
@@ -764,16 +767,16 @@ class MaterialLibraryService
         return $payload;
     }
 
-    private function createKnowledgeBase(array $data): KnowledgeBase
+    private function createKnowledgeBase(array $data, ?int $siteId = null): KnowledgeBase
     {
-        $payload = $this->normalizeKnowledgePayload($data, false);
+        $payload = $this->normalizeKnowledgePayload($data, false, $siteId);
         $knowledgeBase = KnowledgeBase::query()->create($payload);
         $this->requestKnowledgeChunkSync($knowledgeBase);
 
         return $knowledgeBase;
     }
 
-    private function updateKnowledgeBase(Model $row, array $data): void
+    private function updateKnowledgeBase(Model $row, array $data, ?int $siteId = null): void
     {
         if ($row instanceof KnowledgeBase && $row->isSystemManaged()) {
             throw new ApiException(
@@ -783,7 +786,7 @@ class MaterialLibraryService
             );
         }
 
-        $payload = $this->normalizeKnowledgePayload($data, true);
+        $payload = $this->normalizeKnowledgePayload($data, true, $siteId);
         $contentChanged = array_key_exists('content', $payload);
         $row->update($payload);
         if ($contentChanged) {
@@ -807,7 +810,7 @@ class MaterialLibraryService
     /**
      * @return array<string,mixed>
      */
-    private function normalizeKnowledgePayload(array $data, bool $isUpdate): array
+    private function normalizeKnowledgePayload(array $data, bool $isUpdate, ?int $siteId = null): array
     {
         $payload = [];
         if (array_key_exists('name', $data)) {
@@ -848,6 +851,7 @@ class MaterialLibraryService
         if (! $isUpdate) {
             $payload['usage_count'] = 0;
             $payload['used_task_count'] = 0;
+            $payload['site_id'] = $siteId;
         }
 
         $this->ensureHasUpdates($payload);
