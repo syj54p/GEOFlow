@@ -97,7 +97,8 @@ class MaterialController extends BaseApiController
             $type,
             $id,
             $request->integer('page', 1),
-            $request->integer('per_page', 20)
+            $request->integer('per_page', 20),
+            $this->tenantId($request),
         ));
     }
 
@@ -112,16 +113,17 @@ class MaterialController extends BaseApiController
         $payload = in_array($normalizedType, ['keyword-libraries', 'keywords', 'title-libraries', 'titles'], true)
             ? $request->validated()
             : $request->except('image');
-        $operation = function () use ($request, $type, $id, $materials, $image, $payload): JsonResponse {
+        $siteId = $this->tenantId($request);
+        $operation = function () use ($request, $type, $id, $materials, $image, $payload, $siteId): JsonResponse {
             $result = $image !== null
-                ? $materials->createUploadedImageItem($type, $id, $image)
-                : $materials->createItem($type, $id, $payload);
+                ? $materials->createUploadedImageItem($type, $id, $image, $siteId)
+                : $materials->createItem($type, $id, $payload, $siteId);
 
             return $this->success($request, $result, 201);
         };
         $operationGuard = $image !== null
-            ? fn (Closure $callback): JsonResponse => $materials->withUploadedImagePathLock($type, $id, $image, $callback)
-            : fn (Closure $callback): JsonResponse => $materials->withLegacyImagePathLock($type, $id, $payload, $callback);
+            ? fn (Closure $callback): JsonResponse => $materials->withUploadedImagePathLock($type, $id, $image, $callback, $siteId)
+            : fn (Closure $callback): JsonResponse => $materials->withLegacyImagePathLock($type, $id, $payload, $callback, $siteId);
 
         return IdempotencyService::executeJson($request, $routeKey, $operation, $operationGuard);
     }
@@ -131,6 +133,6 @@ class MaterialController extends BaseApiController
      */
     public function destroyItems(Request $request, string $type, int $id, MaterialLibraryService $materials): JsonResponse
     {
-        return $this->success($request, $materials->deleteItems($type, $id, $request->all()));
+        return $this->success($request, $materials->deleteItems($type, $id, $request->all(), $this->tenantId($request)));
     }
 }

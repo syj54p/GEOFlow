@@ -210,10 +210,10 @@ class MaterialLibraryService
     /**
      * @return array<string,mixed>
      */
-    public function listItems(string $type, int $parentId, int $page = 1, int $perPage = 20): array
+    public function listItems(string $type, int $parentId, int $page = 1, int $perPage = 20, ?int $siteId = null): array
     {
         $type = $this->normalizeItemType($type);
-        $this->findMaterial($type, $parentId);
+        $this->findMaterial($type, $parentId, $siteId);
         $query = $this->buildItemQuery($type, $parentId);
 
         return $this->paginate($type, $query, $page, $perPage, fn (Model $row): array => $this->serializeItem($type, $row), $parentId);
@@ -223,10 +223,10 @@ class MaterialLibraryService
      * @param  array<string,mixed>  $data
      * @return array<string,mixed>
      */
-    public function createItem(string $type, int $parentId, array $data): array
+    public function createItem(string $type, int $parentId, array $data, ?int $siteId = null): array
     {
         $type = $this->normalizeWritableItemType($type);
-        $this->findMaterial($type, $parentId);
+        $this->findMaterial($type, $parentId, $siteId);
 
         $row = $type === 'image-libraries'
             ? $this->createImageItem($parentId, $data)
@@ -249,7 +249,7 @@ class MaterialLibraryService
      *
      * @param  array<string,mixed>  $data
      */
-    public function withLegacyImagePathLock(string $type, int $parentId, array $data, callable $callback): mixed
+    public function withLegacyImagePathLock(string $type, int $parentId, array $data, callable $callback, ?int $siteId = null): mixed
     {
         $type = $this->normalizeWritableItemType($type);
         if ($type !== 'image-libraries' || ! (bool) config('geoflow.legacy_image_path_input', false)) {
@@ -258,7 +258,8 @@ class MaterialLibraryService
 
         $submittedPath = $this->requiredString($data, 'file_path', '图片 file_path 不能为空', 500);
         try {
-            return DB::transaction(function () use ($callback, $parentId, $submittedPath): mixed {
+            return DB::transaction(function () use ($callback, $parentId, $submittedPath, $type, $siteId): mixed {
+                $this->findMaterial($type, $parentId, $siteId);
                 ImageLibrary::query()->whereKey($parentId)->lockForUpdate()->firstOrFail();
 
                 return $this->managedImages->withExistingPathLock($submittedPath, fn (): mixed => $callback());
@@ -268,14 +269,15 @@ class MaterialLibraryService
         }
     }
 
-    public function withUploadedImagePathLock(string $type, int $parentId, UploadedFile $image, callable $callback): mixed
+    public function withUploadedImagePathLock(string $type, int $parentId, UploadedFile $image, callable $callback, ?int $siteId = null): mixed
     {
         $type = $this->normalizeWritableItemType($type);
         if ($type !== 'image-libraries') {
             $this->validationError('image', '仅图片库支持图片上传');
         }
 
-        return DB::transaction(function () use ($callback, $image, $parentId): mixed {
+        return DB::transaction(function () use ($callback, $image, $parentId, $type, $siteId): mixed {
+            $this->findMaterial($type, $parentId, $siteId);
             ImageLibrary::query()->whereKey($parentId)->lockForUpdate()->firstOrFail();
 
             return $this->managedImages->withUploadedImagePathLock($image, $callback);
@@ -285,13 +287,13 @@ class MaterialLibraryService
     /**
      * @return array<string,mixed>
      */
-    public function createUploadedImageItem(string $type, int $parentId, UploadedFile $image): array
+    public function createUploadedImageItem(string $type, int $parentId, UploadedFile $image, ?int $siteId = null): array
     {
         $type = $this->normalizeWritableItemType($type);
         if ($type !== 'image-libraries') {
             $this->validationError('image', '仅图片库支持图片上传');
         }
-        $this->findMaterial($type, $parentId);
+        $this->findMaterial($type, $parentId, $siteId);
         $connection = DB::connection();
         $deferCompensation = $connection->transactionLevel() > 0;
         $stored = null;
@@ -332,10 +334,10 @@ class MaterialLibraryService
      * @param  array<string,mixed>  $data
      * @return array{type:string,parent_id:int,deleted_count:int,cleanup_failed_count:int}
      */
-    public function deleteItems(string $type, int $parentId, array $data): array
+    public function deleteItems(string $type, int $parentId, array $data, ?int $siteId = null): array
     {
         $type = $this->normalizeWritableItemType($type);
-        $this->findMaterial($type, $parentId);
+        $this->findMaterial($type, $parentId, $siteId);
         $ids = $this->extractIds($data);
         if ($ids === []) {
             throw new ApiException('validation_failed', '请选择要删除的素材条目', 422, [
