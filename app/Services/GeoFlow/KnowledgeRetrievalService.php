@@ -38,6 +38,7 @@ class KnowledgeRetrievalService
         int $maxChars = 3200,
         Admin|AiExecutionContext|null $identity = null,
         ?string $retrievalRequestId = null,
+        ?int $siteId = null,
     ): string {
         $retrievalRequestId ??= (string) Str::uuid();
 
@@ -48,6 +49,7 @@ class KnowledgeRetrievalService
                 max($limit * 4, 16),
                 identity: $identity,
                 retrievalRequestId: $retrievalRequestId,
+                siteId: $siteId,
             ),
             $limit,
             $maxChars
@@ -64,6 +66,7 @@ class KnowledgeRetrievalService
         int $maxChars = 3200,
         Admin|AiExecutionContext|null $identity = null,
         ?string $retrievalRequestId = null,
+        ?int $siteId = null,
     ): string {
         return $this->retrieveContextBundleFromMany(
             $knowledgeBaseIds,
@@ -72,6 +75,8 @@ class KnowledgeRetrievalService
             $maxChars,
             $identity,
             $retrievalRequestId,
+            null,
+            $siteId,
         )['context'];
     }
 
@@ -87,6 +92,7 @@ class KnowledgeRetrievalService
         Admin|AiExecutionContext|null $identity = null,
         ?string $retrievalRequestId = null,
         ?Closure $assertActive = null,
+        ?int $siteId = null,
     ): array {
         $retrievalRequestId ??= (string) Str::uuid();
         $evidence = $this->boundedEvidenceForContext(
@@ -97,6 +103,7 @@ class KnowledgeRetrievalService
                 identity: $identity,
                 retrievalRequestId: $retrievalRequestId,
                 assertActive: $assertActive,
+                siteId: $siteId,
             ),
             $limit,
             $maxChars,
@@ -121,6 +128,7 @@ class KnowledgeRetrievalService
         array $snapshot,
         array $allowedKnowledgeBaseIds,
         array $servingGenerations = [],
+        ?int $siteId = null,
     ): array {
         $allowedKnowledgeBaseIds = collect($allowedKnowledgeBaseIds)
             ->map(static fn ($id): int => (int) $id)
@@ -146,6 +154,7 @@ class KnowledgeRetrievalService
         }
 
         $knowledgeBases = KnowledgeBase::query()
+            ->visibleTo($siteId)
             ->whereIn('id', $allowedKnowledgeBaseIds)
             ->get($this->knowledgeBaseSelectColumns())
             ->keyBy('id');
@@ -221,6 +230,7 @@ class KnowledgeRetrievalService
         Admin|AiExecutionContext|null $identity = null,
         ?string $retrievalRequestId = null,
         ?Closure $assertActive = null,
+        ?int $siteId = null,
     ): array {
         $retrievalRequestId ??= (string) Str::uuid();
         $knowledgeBaseIds = collect($knowledgeBaseIds)
@@ -246,6 +256,7 @@ class KnowledgeRetrievalService
                 $retrievalRequestId,
                 1,
                 $assertActive,
+                $siteId,
             );
         }
 
@@ -263,6 +274,7 @@ class KnowledgeRetrievalService
                 $retrievalRequestId,
                 $order + 1,
                 $assertActive,
+                $siteId,
             ) as $candidate) {
                 $candidate['knowledge_base_rank'] = $order;
                 $merged[] = $candidate;
@@ -301,11 +313,13 @@ class KnowledgeRetrievalService
         ?string $retrievalRequestId = null,
         int $queryOrdinal = 1,
         ?Closure $assertActive = null,
+        ?int $siteId = null,
     ): array {
         $assertActive?->__invoke();
         $retrievalRequestId ??= (string) Str::uuid();
         /** @var KnowledgeBase|null $knowledgeBase */
         $knowledgeBase = KnowledgeBase::query()
+            ->visibleTo($siteId)
             ->whereKey($knowledgeBaseId)
             ->first($this->knowledgeBaseSelectColumns());
 
