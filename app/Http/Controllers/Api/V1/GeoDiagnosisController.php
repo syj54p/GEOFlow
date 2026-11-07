@@ -35,6 +35,7 @@ class GeoDiagnosisController extends BaseApiController
 
         $running = GeoDiagnosisRun::query()
             ->where('article_id', $article->id)
+            ->where('site_id', $siteId)
             ->where('status', GeoDiagnosisRun::STATUS_RUNNING)
             ->exists();
 

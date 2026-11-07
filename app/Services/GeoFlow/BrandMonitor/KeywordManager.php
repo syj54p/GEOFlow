@@ -47,18 +47,36 @@ final class KeywordManager
 
     /**
      * 删除关键词
+     *
+     * @param int $keywordId 关键词 ID
+     * @param int|null $siteId 租户站点 ID（非 null 时校验归属，防跨租户删除）
+     * @throws \RuntimeException 关键词不存在或无权修改
      */
-    public function removeKeyword(int $keywordId): bool
+    public function removeKeyword(int $keywordId, ?int $siteId = null): bool
     {
-        return (bool) BrandKeyword::query()->whereKey($keywordId)->delete();
+        $keyword = BrandKeyword::query()
+            ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
+            ->find($keywordId);
+
+        if ($keyword === null) {
+            throw new \RuntimeException('关键词不存在或无权修改');
+        }
+
+        return (bool) $keyword->delete();
     }
 
     /**
      * 切换关键词活跃状态
+     *
+     * @param int $keywordId 关键词 ID
+     * @param int|null $siteId 租户站点 ID（非 null 时校验归属，防跨租户改）
      */
-    public function toggleKeyword(int $keywordId): ?BrandKeyword
+    public function toggleKeyword(int $keywordId, ?int $siteId = null): ?BrandKeyword
     {
-        $keyword = BrandKeyword::query()->find($keywordId);
+        $keyword = BrandKeyword::query()
+            ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
+            ->find($keywordId);
+
         if ($keyword === null) {
             return null;
         }

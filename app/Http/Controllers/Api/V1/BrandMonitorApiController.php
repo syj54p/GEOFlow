@@ -26,6 +26,7 @@ class BrandMonitorApiController extends BaseApiController
     public function __construct(
         private readonly BrandMonitorOrchestrator $orchestrator,
         private readonly KeywordManager $keywordManager,
+        private readonly BrandVisibilityService $visibilityService,
     ) {}
 
     // ── AI 可见性 ──
@@ -64,8 +65,7 @@ class BrandMonitorApiController extends BaseApiController
         $siteId = $this->tenantId($request);
 
         $adapters = $this->orchestrator->getAdapters();
-        $visibilityService = new BrandVisibilityService();
-        $count = $visibilityService->refreshVisibility($adapters, $siteId);
+        $count = $this->visibilityService->refreshVisibility($adapters, $siteId);
 
         return $this->success($request, [
             'results_count' => $count,
@@ -152,7 +152,7 @@ class BrandMonitorApiController extends BaseApiController
             ], 404);
         }
 
-        $this->keywordManager->removeKeyword($id);
+        $this->keywordManager->removeKeyword($id, $siteId);
 
         return $this->success($request, ['deleted' => true]);
     }

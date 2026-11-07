@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BrandKeyword;
 use App\Models\BrandPlatform;
 use App\Services\GeoFlow\BrandMonitor\BrandMonitorOrchestrator;
+use App\Services\GeoFlow\BrandMonitor\BrandVisibilityService;
 use App\Services\GeoFlow\BrandMonitor\KeywordManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class BrandMonitorController extends Controller
     public function __construct(
         private readonly BrandMonitorOrchestrator $orchestrator,
         private readonly KeywordManager $keywordManager,
+        private readonly BrandVisibilityService $visibilityService,
     ) {}
 
     /**
@@ -72,8 +74,7 @@ class BrandMonitorController extends Controller
     public function refreshVisibility(): JsonResponse
     {
         $adapters = $this->orchestrator->getAdapters();
-        $count = $this->orchestrator->getVisibilityData(); // 触发刷新
-        $result = (new \App\Services\GeoFlow\BrandMonitor\BrandVisibilityService())->refreshVisibility($adapters);
+        $result = $this->visibilityService->refreshVisibility($adapters);
 
         return response()->json([
             'data' => ['results_count' => $result, 'message' => '检测完成'],

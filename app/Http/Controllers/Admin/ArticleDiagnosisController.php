@@ -72,10 +72,11 @@ class ArticleDiagnosisController extends Controller
     /**
      * 获取文章最新诊断结果
      */
-    public function latest(int $articleId): JsonResponse
+    public function latest(Request $request, int $articleId): JsonResponse
     {
         $article = Article::query()->whereKey($articleId)->firstOrFail();
-        $run = $this->orchestrator->getLatestDiagnosis($article);
+        $siteId = $request->input('site_id') !== null ? (int) $request->input('site_id') : null;
+        $run = $this->orchestrator->getLatestDiagnosis($article, $siteId);
 
         if ($run === null) {
             return response()->json([
@@ -113,10 +114,14 @@ class ArticleDiagnosisController extends Controller
         $perPage = (int) $request->input('per_page', 10);
         $perPage = min(max($perPage, 1), 50);
 
-        $runs = $article->geoDiagnosisRuns()
+        $siteId = $request->input('site_id') !== null ? (int) $request->input('site_id') : null;
+
+        $query = $article->geoDiagnosisRuns()
             ->completed()
-            ->latestFirst()
-            ->paginate($perPage);
+            ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
+            ->latestFirst();
+
+        $runs = $query->paginate($perPage);
 
         return response()->json([
             'data' => [

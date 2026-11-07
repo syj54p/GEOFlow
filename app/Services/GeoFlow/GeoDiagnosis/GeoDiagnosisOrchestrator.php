@@ -143,21 +143,32 @@ final class GeoDiagnosisOrchestrator
 
     /**
      * 获取文章的最新诊断结果。
+     *
+     * @param Article $article 文章
+     * @param int|null $siteId 租户站点 ID（null = 全局不过滤，Admin web 面；非 null = 严格过滤，API 面）
      */
-    public function getLatestDiagnosis(Article $article): ?GeoDiagnosisRun
+    public function getLatestDiagnosis(Article $article, ?int $siteId = null): ?GeoDiagnosisRun
     {
-        return $article->latestGeoDiagnosisRun;
+        return $article->geoDiagnosisRuns()
+            ->completed()
+            ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
+            ->latestFirst()
+            ->first();
     }
 
     /**
      * 获取文章的诊断历史。
      *
+     * @param Article $article 文章
+     * @param int $limit 返回条数上限
+     * @param int|null $siteId 租户站点 ID（null = 全局不过滤；非 null = 严格过滤）
      * @return \Illuminate\Database\Eloquent\Collection<int, GeoDiagnosisRun>
      */
-    public function getDiagnosisHistory(Article $article, int $limit = 10): \Illuminate\Database\Eloquent\Collection
+    public function getDiagnosisHistory(Article $article, int $limit = 10, ?int $siteId = null): \Illuminate\Database\Eloquent\Collection
     {
         return $article->geoDiagnosisRuns()
             ->completed()
+            ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
             ->latestFirst()
             ->limit($limit)
             ->get();
