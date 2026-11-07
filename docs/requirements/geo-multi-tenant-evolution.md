@@ -1,8 +1,8 @@
 # GEOFlow 多租户适配 — 后续演进规划
 
-> **日期**：2026-11-07  
-> **前置状态**：MVP（Phase 0–5）已交付，Phase 6–8 已交付  
-> **当前状态**：全部 8 个 Phase 完成，多租户适配闭环
+> **日期**：2026-11-08  
+> **前置状态**：MVP（Phase 0–5）已交付，Phase 6–8 已交付，知识库隔离 K1–K7 已交付  
+> **当前状态**：全部 8 个 Phase + 知识库隔离 7 步完成，多租户适配深度闭环
 
 ---
 
@@ -12,7 +12,8 @@
 Phase 6（P0，1.5–2 天）   Bridge 侧交付 → 租户能用                    ✅ 已完成 (2026-11-07 验证通过)
 Phase 7（P1，1 天）        测试补全 + 代码加固 → 质量闭环                ✅ 已完成 (commit fe65353)
 Phase 8（P2，2–3 天）      Admin 面板租户视图 → 超管可按站点查看         ✅ 已完成 (commit 700a543)
-长期演进（P3，按需）        知识库隔离 / 文章归属 / 路线 C                ⏳ 按需启动
+K1-K7（P3，1 天）          知识库隔离 → 租户数据深度隔离                  ✅ 已完成 (2026-11-08)
+长期演进（P4，按需）        文章归属 / 路线 C / 更多资源隔离              ⏳ 按需启动
 ```
 
 ---
@@ -844,6 +845,33 @@ Route::get('/admin/api/sites', function () {
 
 ---
 
+## 知识库隔离 K1–K7 — ✅ 已完成 (2026-11-08)
+
+**目标**：实现知识库（knowledge_bases）的租户级数据隔离，确保不同 niucloud 站点只能访问自己的知识库和全局共享知识库。
+
+**设计方案**：
+- site_id 仅加在 `knowledge_bases` 表，`knowledge_chunks` 通过 FK 继承归属
+- 混合可见性模型：`site_id = NULL` → 全局共享；`site_id = N` → 站点 N 私有
+- API 查询：`WHERE site_id = $siteId OR site_id IS NULL`（visibleTo scope）
+- Admin Web：超管全局视图，siteId = null，不做过滤
+
+**交付清单**：
+- ✅ K1：数据库迁移 + Model 层（`2026_11_08_000001_add_site_id_to_knowledge_bases_table.php`，KnowledgeBase scope 方法）
+- ✅ K2：API 面隔离（materials 9 路由挂 api.tenant，MaterialController/Service 传 siteId，visibleTo 过滤）
+- ✅ K3：检索链路隔离（KnowledgeRetrievalService 5 个公开方法加 siteId 参数，retrieveEvidence/validateEvidenceSnapshot 加 visibleTo 防线）
+- ✅ K4：Job/Coordinator 适配（tasks 9 路由挂 api.tenant，TaskController 传 siteId，TaskLifecycleService 校验 KB 绑定归属）
+- ✅ K5：Admin Web 面站点筛选（KnowledgeBaseController 列表暴露 site_id 字段，超管可识别归属）
+- ✅ K6：Bridge 侧适配（确认 X-Site-Id header 已传递，bridge 不调用 materials/tasks 写接口，无需额外改动）
+- ✅ K7：测试 + 验收（PHP 语法检查通过，生产路由注册验证通过，应用正常启动）
+
+**关键代码变更**：
+- `MaterialLibraryService`：summary/list/show/create/update/delete 接受 `?int $siteId`，knowledge-bases 类型执行 visibleTo 过滤
+- `KnowledgeRetrievalService`：retrieveEvidence/retrieveEvidenceFromMany/retrieveContextBundleFromMany/validateEvidenceSnapshot 接受 `?int $siteId`，加载 KnowledgeBase 时加 visibleTo scope
+- `TaskLifecycleService`：createTaskForApi/updateTaskForApi 接受 `?int $siteId`，新增 `assertKnowledgeBasesTenantVisible()` 校验方法
+- 所有新参数均默认 `null`，Admin Web 路径不受影响
+
+---
+
 ## 附录：演进优先级与工期估算
 
 | 阶段 | 优先级 | 工期 | 阻塞项 | 交付物 | 状态 |
@@ -851,9 +879,10 @@ Route::get('/admin/api/sites', function () {
 | Phase 6 | **P0** | 1.5–2 天 | 无 | Bridge 侧完整交付，租户能用 | ✅ 已完成 (2026-11-07) |
 | Phase 7 | P1 | 1 天 | Phase 6 | 测试补全 + 代码加固 | ✅ 已完成 (commit fe65353) |
 | Phase 8 | P2 | 2–3 天 | Phase 7 | Admin 面板租户视图 | ✅ 已完成 (commit 700a543) |
-| 长期演进 | P3 | 按需 | 业务需求驱动 | 知识库隔离 / 文章归属 / 扇出调度 / 路线 C | ⏳ 按需启动 |
+| K1-K7 | **P3** | 1 天 | Phase 8 | 知识库隔离全链路 | ✅ 已完成 (2026-11-08) |
+| 长期演进 | P4 | 按需 | 业务需求驱动 | 文章归属 / 扇出调度 / 路线 C | ⏳ 按需启动 |
 
-**Phase 1–8 已全部交付**。后续按业务需求从长期演进项中选取启动。
+**Phase 1–8 + K1-K7 已全部交付**。后续按业务需求从长期演进项中选取启动。
 
 ---
 

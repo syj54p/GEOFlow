@@ -1,10 +1,10 @@
 # GEOFlow 多租户适配实施方案（路线 A+：轻量映射 + Token 绑定）
 
-> **版本**：v1.6
-> **日期**：2026-11-07
-> **状态**：Phase 1–8 全部交付完成，进入长期演进阶段
+> **版本**：v1.7
+> **日期**：2026-11-08
+> **状态**：Phase 1–8 全部交付完成；知识库隔离 K1–K7 全部交付完成
 > **前置依赖**：GEO 诊断 MVP 已交付（commit `5e9cc7d`）
-> **修订说明**：v1.6 Phase 6（Bridge 侧交付）验证完成——GeoflowApiService/GeoDiagnosis 控制器/前端页面/菜单注册/build-addon 全链路就位；v1.5 Phase 7 代码加固 + Phase 8 Admin 站点筛选已交付（commit `fe65353`, `700a543`）；v1.4 编制后续演进规划；v1.3 标记 MVP 实际交付状态。
+> **修订说明**：v1.7 知识库隔离 K1-K7 全链路交付——K1 迁移+Model、K2 materials API 隔离、K3 检索链路 visibleTo 防线、K4 tasks API 隔离+KB 绑定校验、K5 Admin Web 暴露 site_id、K6 Bridge 侧确认合规、K7 生产验证通过。
 
 ---
 
