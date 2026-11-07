@@ -12,10 +12,12 @@
 use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\Api\V1\ArticleController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BrandMonitorApiController;
 use App\Http\Controllers\Api\V1\BrowserDeviceAuthorizationController;
 use App\Http\Controllers\Api\V1\BrowserManualPublicationController;
 use App\Http\Controllers\Api\V1\BrowserSessionController;
 use App\Http\Controllers\Api\V1\CatalogController;
+use App\Http\Controllers\Api\V1\GeoDiagnosisController;
 use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\ManagementOperationController;
 use App\Http\Controllers\Api\V1\ManagementSessionController;
@@ -224,6 +226,49 @@ Route::prefix('v1')
                 Route::post('/evaluate', [SkillController::class, 'evaluate'])
                     ->middleware(['api.scope:skills:write', 'throttle:30,1'])
                     ->name('evaluate');
+            });
+
+            // ── 多租户 API：GEO 诊断（api.tenant 强制 site_id 上下文）──
+            Route::middleware(['api.tenant', 'api.scope:geo-diagnosis:read'])->group(function (): void {
+                Route::get('geo-diagnosis/dashboard', [GeoDiagnosisController::class, 'dashboard'])
+                    ->name('api.v1.geo-diagnosis.dashboard');
+                Route::get('articles/{articleId}/geo-diagnosis/latest', [GeoDiagnosisController::class, 'latest'])
+                    ->whereNumber('articleId')
+                    ->name('api.v1.geo-diagnosis.latest');
+                Route::get('articles/{articleId}/geo-diagnosis/history', [GeoDiagnosisController::class, 'history'])
+                    ->whereNumber('articleId')
+                    ->name('api.v1.geo-diagnosis.history');
+            });
+            Route::post('articles/{articleId}/geo-diagnosis/run', [GeoDiagnosisController::class, 'run'])
+                ->whereNumber('articleId')
+                ->middleware(['api.tenant', 'api.scope:geo-diagnosis:write', 'throttle:30,1'])
+                ->name('api.v1.geo-diagnosis.run');
+
+            // ── 多租户 API：品牌监测（api.tenant 强制 site_id 上下文）──
+            Route::middleware(['api.tenant', 'api.scope:brand-monitor:read'])->group(function (): void {
+                Route::get('brand-monitor/visibility', [BrandMonitorApiController::class, 'visibility'])
+                    ->name('api.v1.brand-monitor.visibility');
+                Route::get('brand-monitor/sources', [BrandMonitorApiController::class, 'sources'])
+                    ->name('api.v1.brand-monitor.sources');
+                Route::get('brand-monitor/sentiment', [BrandMonitorApiController::class, 'sentiment'])
+                    ->name('api.v1.brand-monitor.sentiment');
+                Route::get('brand-monitor/keywords', [BrandMonitorApiController::class, 'keywords'])
+                    ->name('api.v1.brand-monitor.keywords.index');
+                Route::get('brand-monitor/platforms', [BrandMonitorApiController::class, 'platforms'])
+                    ->name('api.v1.brand-monitor.platforms.index');
+            });
+            Route::middleware(['api.tenant', 'api.scope:brand-monitor:write'])->group(function (): void {
+                Route::post('brand-monitor/visibility/refresh', [BrandMonitorApiController::class, 'refreshVisibility'])
+                    ->middleware('throttle:10,1')
+                    ->name('api.v1.brand-monitor.visibility.refresh');
+                Route::post('brand-monitor/keywords', [BrandMonitorApiController::class, 'addKeyword'])
+                    ->name('api.v1.brand-monitor.keywords.store');
+                Route::delete('brand-monitor/keywords/{id}', [BrandMonitorApiController::class, 'removeKeyword'])
+                    ->whereNumber('id')
+                    ->name('api.v1.brand-monitor.keywords.destroy');
+                Route::put('brand-monitor/platforms/{id}', [BrandMonitorApiController::class, 'updatePlatform'])
+                    ->whereNumber('id')
+                    ->name('api.v1.brand-monitor.platforms.update');
             });
         });
     });

@@ -84,24 +84,36 @@ final class BrandVisibilityService
     /**
      * 手动触发一次可见性检测
      *
+     * 平台配对规则（Phase 0 决策）：
+     *   - platform.site_id = NULL → 全局共享，可服务任何关键词
+     *   - platform.site_id = X → 仅服务 site_id = X 的关键词
+     *
+     * 结果落库 site_id 取关键词自身的 site_id，而非传入参数。
+     *
      * @param  PlatformAdapterInterface[]  $adapters  平台适配器映射 [code => adapter]
      */
     public function refreshVisibility(array $adapters, ?int $siteId = null): int
     {
         $keywords = BrandKeyword::query()
-            ->when($siteId !== null, fn($q) => $q->where('site_id', $siteId))
+            ->when($siteId !== null, fn ($q) => $q->where('site_id', $siteId))
             ->active()
             ->get();
 
-        $platforms = BrandPlatform::query()
-            ->when($siteId !== null, fn($q) => $q->where('site_id', $siteId))
+        // 取所有启用平台（全局 + 各租户），在循环内按关键词 site_id 配对
+        $allPlatforms = BrandPlatform::query()
+            ->when($siteId !== null, fn ($q) => $q->where(fn ($sub) => $sub->whereNull('site_id')->orWhere('site_id', $siteId)))
             ->enabled()
             ->get();
 
         $count = 0;
 
         foreach ($keywords as $keyword) {
-            foreach ($platforms as $platform) {
+            // 按关键词的 site_id 过滤可用平台：NULL 全局 + 同 site 私有
+            $eligiblePlatforms = $allPlatforms->filter(
+                fn (BrandPlatform $p) => $p->site_id === null || (int) $p->site_id === (int) $keyword->site_id
+            );
+
+            foreach ($eligiblePlatforms as $platform) {
                 $adapter = $adapters[$platform->code] ?? null;
                 if ($adapter === null) {
                     continue;
@@ -111,7 +123,7 @@ final class BrandVisibilityService
                 $result = $adapter->checkKeywordRank($keyword->keyword, $config);
 
                 BrandMonitorResult::create([
-                    'site_id' => $siteId,
+                    'site_id' => $keyword->site_id,   // ← 取关键词自身的 site_id，非传入参数
                     'keyword_id' => $keyword->id,
                     'platform_id' => $platform->id,
                     'search_rank' => $result['rank'],

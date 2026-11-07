@@ -53,6 +53,7 @@ final class GeoDiagnosisOrchestrator
         $run = GeoDiagnosisRun::create([
             'article_id' => $article->id,
             'admin_id' => $adminId,
+            'site_id' => $context['site_id'] ?? null,
             'status' => GeoDiagnosisRun::STATUS_RUNNING,
             'started_at' => now(),
         ]);
