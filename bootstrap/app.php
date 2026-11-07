@@ -25,6 +25,7 @@ use App\Http\Middleware\NormalizeRequestHost;
 use App\Http\Middleware\RecordSiteViewLog;
 use App\Http\Middleware\RenderAiWorkspaceJsonErrors;
 use App\Http\Middleware\ResolveCurrentSite;
+use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\ScopeThemeRevision;
 use App\Http\Middleware\SiteWebLocale;
 use App\Http\Middleware\TrackAdminRecentPage;
@@ -93,6 +94,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.recovery' => GuardRecoveryWrites::class,
             // 校验 Token scopes，如 api.scope:catalog:read
             'api.scope' => EnsureApiScope::class,
+            // 解析租户上下文（site_id）：token 绑定优先，Header 校验，fail-closed
+            'api.tenant' => ResolveTenant::class,
             'browser.protocol' => EnsureBrowserOperationsProtocol::class,
             // Blade 后台：管理员会话鉴权（失败跳转 admin.login）
             'admin.auth' => AuthenticateAdminWeb::class,

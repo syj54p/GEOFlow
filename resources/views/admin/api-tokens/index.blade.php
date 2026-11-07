@@ -43,6 +43,12 @@
                     </div>
 
                     <div>
+                        <label for="site_id" class="block text-sm font-medium text-gray-700">{{ __('admin.api_tokens.field.site_id') }}</label>
+                        <input id="site_id" name="site_id" type="number" min="1" value="{{ old('site_id') }}" placeholder="{{ __('admin.api_tokens.placeholder.site_id') }}" class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">{{ __('admin.api_tokens.help.site_id') }}</p>
+                    </div>
+
+                    <div>
                         <div class="mb-3 block text-sm font-medium text-gray-700">Scopes *</div>
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                             @foreach ($availableScopes as $scope)
@@ -79,6 +85,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">{{ __('admin.api_tokens.column.name') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Scopes</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">{{ __('admin.api_tokens.column.created_by') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">{{ __('admin.api_tokens.column.site_id') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">{{ __('admin.api_tokens.column.last_used') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">{{ __('admin.api_tokens.column.expires_at') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">{{ __('admin.api_tokens.column.status') }}</th>
@@ -91,6 +98,13 @@
                                     <td class="px-6 py-4 text-sm text-gray-900">{{ $token['name'] ?? '' }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-600">{{ implode(', ', $token['scopes'] ?? []) }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-600">{{ $token['created_by_username'] !== '' ? $token['created_by_username'] : __('admin.api_tokens.value.system') }}</td>
+                                    <td class="px-6 py-4 text-sm">
+                                        @if (!empty($token['site_id']))
+                                            <span class="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">site#{{ $token['site_id'] }}</span>
+                                        @else
+                                            <span class="text-gray-400">{{ __('admin.api_tokens.value.global') }}</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 text-sm text-gray-600">{{ $token['last_used_at'] ?? __('admin.api_tokens.value.never_used') }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-600">{{ $token['expires_at'] ?? __('admin.api_tokens.value.no_expiry') }}</td>
                                     <td class="px-6 py-4 text-sm">

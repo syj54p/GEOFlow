@@ -172,7 +172,7 @@ class ApiTokenService
      * @param  list<string>  $scopes
      * @return array{token: string, record: array<string, mixed>}
      */
-    public function createToken(string $name, array $scopes, ?int $adminId, ?string $expiresAt = null): array
+    public function createToken(string $name, array $scopes, ?int $adminId, ?string $expiresAt = null, ?int $siteId = null): array
     {
         $recovery = app(RecoveryState::class)->assertHttpReady();
         $name = trim($name);
@@ -186,6 +186,12 @@ class ApiTokenService
         if ($scopes === []) {
             throw new ApiException('validation_failed', '至少选择一个 scope', 422, [
                 'field_errors' => ['scopes' => '至少选择一个 scope'],
+            ]);
+        }
+
+        if ($siteId !== null && $siteId <= 0) {
+            throw new ApiException('validation_failed', '绑定站点 ID 必须为正整数', 422, [
+                'field_errors' => ['site_id' => '绑定站点 ID 必须为正整数'],
             ]);
         }
 
@@ -205,8 +211,15 @@ class ApiTokenService
         if (! $model instanceof PersonalAccessToken) {
             throw new ApiException('token_create_failed', 'Token 创建失败', 500);
         }
+        $extraAttributes = [];
         if ($recovery !== null) {
-            $model->forceFill(['recovery_epoch' => $recovery['epoch']])->save();
+            $extraAttributes['recovery_epoch'] = $recovery['epoch'];
+        }
+        if ($siteId !== null) {
+            $extraAttributes['site_id'] = $siteId;
+        }
+        if ($extraAttributes !== []) {
+            $model->forceFill($extraAttributes)->save();
         }
 
         $record = $this->hydrate($model);
@@ -225,6 +238,7 @@ class ApiTokenService
         return array_values(array_unique(array_merge(
             $this->getCliLoginScopes(),
             $this->getBrowserClientScopes(),
+            $this->getTenantScopes(),
             ManagementScopePolicy::SCOPES,
         )));
     }
@@ -259,6 +273,21 @@ class ApiTokenService
     }
 
     /**
+     * 多租户 API scope（niucloud bridge 诊断 / 品牌监测链路）。
+     *
+     * @return list<string>
+     */
+    public function getTenantScopes(): array
+    {
+        return [
+            'geo-diagnosis:read',
+            'geo-diagnosis:write',
+            'brand-monitor:read',
+            'brand-monitor:write',
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function hydrate(PersonalAccessToken $row): array
@@ -275,6 +304,7 @@ class ApiTokenService
             'scopes' => $scopes,
             'status' => 'active',
             'created_by_admin_id' => $row->tokenable_id !== null ? (int) $row->tokenable_id : null,
+            'site_id' => $row->site_id !== null ? (int) $row->site_id : null,
             'last_used_at' => $row->last_used_at?->format('Y-m-d H:i:s'),
             'expires_at' => $row->expires_at?->format('Y-m-d H:i:s'),
             'created_at' => $row->created_at?->format('Y-m-d H:i:s'),

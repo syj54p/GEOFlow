@@ -56,6 +56,7 @@ class ApiTokenController extends Controller
             'scopes' => ['required', 'array', 'min:1'],
             'scopes.*' => ['required', 'string'],
             'expires_at' => ['nullable', 'string', 'max:32'],
+            'site_id' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $adminId = auth('admin')->id() !== null ? (int) auth('admin')->id() : 0;
@@ -86,7 +87,8 @@ class ApiTokenController extends Controller
                 (string) $payload['name'],
                 is_array($payload['scopes']) ? $payload['scopes'] : [],
                 $adminId > 0 ? $adminId : null,
-                (string) ($payload['expires_at'] ?? '')
+                (string) ($payload['expires_at'] ?? ''),
+                isset($payload['site_id']) ? (int) $payload['site_id'] : null,
             );
             $recordId = (int) ($created['record']['id'] ?? 0);
             if (! Cache::put($idempotencyKey, [

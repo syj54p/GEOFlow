@@ -14,6 +14,7 @@ class GeoDiagnosisRun extends Model
     protected $fillable = [
         'article_id',
         'admin_id',
+        'site_id',
         'total_score',
         'content_structure_score',
         'knowledge_alignment_score',
@@ -32,6 +33,7 @@ class GeoDiagnosisRun extends Model
         return [
             'article_id' => 'integer',
             'admin_id' => 'integer',
+            'site_id' => 'integer',
             'total_score' => 'integer',
             'content_structure_score' => 'integer',
             'knowledge_alignment_score' => 'integer',
